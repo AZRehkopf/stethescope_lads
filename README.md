@@ -5,12 +5,12 @@ This is the repository for our capstone project. Please use this file to keep tr
 
 ### Andrew
 
-[ ] Blutooth Communication
-[ ] Dummy Data Transmission
+- [ ] Blutooth Communication
+- [ ] Dummy Data Transmission
 
 ### Joshua
 
-[ ] Basic Data Path
+- [ ] Basic Data Path
 
 ## Bugs
 
@@ -18,4 +18,4 @@ There is no code yet, so there better not be any bugs.
 
 ## Instructions 
 
-¯\_(ツ)_/¯ 
+¯\\_(ツ)_/¯ 
