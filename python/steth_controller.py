@@ -11,7 +11,6 @@ import sys
 # Local imports
 
 # Third party imports
-import bluetooth
 
 ### Globals ###
 
@@ -32,7 +31,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 class StethescopeController():
-    def __init__():
+    def __init__(self):
         pass
 
 if __name__ == "__main__":
