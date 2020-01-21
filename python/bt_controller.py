@@ -1,5 +1,5 @@
-# steth_controller.py
-# Coordinates all the digital stethescope components
+# bt_controller.py
+# Receives data from the ESP32 board
 
 ### Imports ###
 
@@ -9,8 +9,6 @@ import os
 import sys
 from time import sleep
 
-# Local imports
-
 # Third party imports
 import bluetooth
 
@@ -18,10 +16,11 @@ import bluetooth
 LOGGER = logging.getLogger(__name__)
 
 class BluetoothController():
-    def __init__(self):
+    def __init__(self, controller):
+        self.controller = controller
+        
         self.mac_address = None
         self.name = None
-        
         self.socket = None
         self.port = 1
 
@@ -50,27 +49,45 @@ class BluetoothController():
                 LOGGER.error("Multiple ESP32 devices were detected, no handling for this yet")
 
     def connect_and_listen(self):
+        LOGGER.info("Opening connection with the ESP32 device.")
+        
         self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         self.socket.connect((self.mac_address, self.port))
-        
+        LOGGER.info("Ready to receive data.")
+
         byte_buffer = []
         carry = None 
 
-        while True:
+        while self.controller.receive_data:
+            # Get Data from bluetooth buffer
             data = self.socket.recv(32)
             parsed_data = bytes.hex(bytes(data))
-            
-            for block in range(2,len(parsed_data)+1,2):
-	            byte_buffer.append(parsed_data[block-2:block])
 
+            # Check if there was a carry over from the last set of values
+            if carry != None:
+                byte_buffer.append(int(carry+parsed_data[:4-len(carry)], 16))
+                parsed_data = parsed_data[4-len(carry):]
+                carry = None
+            
+            # Process received data
+            for block in range(4,len(parsed_data)+1,4):
+	            byte_buffer.append(int(parsed_data[block-4:block], 16))
+
+            # Check if there are any incomplete sets of 4 bytes
+            remainder = len(parsed_data) % 4
+            if (remainder) != 0:
+                carry = parsed_data[-remainder:]
+
+            # Print every 10000 samples
+            # Add code to save data to file here if necessary
             if len(byte_buffer) >= 10000:
-                print(byte_buffer)
+                #print(byte_buffer)
                 byte_buffer = []
         
         self.socket.close()
 
 if __name__ == "__main__":
+    # Code for debugging this module
     test_controller = BluetoothController()
     test_controller.search_for_device()
-    print("connected")
     test_controller.connect_and_listen()

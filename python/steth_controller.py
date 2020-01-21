@@ -9,6 +9,7 @@ import os
 import sys
 
 # Local imports
+from bt_controller import BluetoothController
 
 # Third party imports
 
@@ -32,7 +33,14 @@ LOGGER = logging.getLogger(__name__)
 
 class StethescopeController():
     def __init__(self):
-        pass
+        self.receive_data = True
+        self.bluetooth_module = BluetoothController(self)
+
+    def start_listening(self):
+        LOGGER.info("Beginning listening session...")
+        self.bluetooth_module.search_for_device()
+        self.bluetooth_module.connect_and_listen()
 
 if __name__ == "__main__":
-    pass
+    stethescope = StethescopeController()
+    stethescope.start_listening()
