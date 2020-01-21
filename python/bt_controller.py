@@ -54,9 +54,9 @@ class BluetoothController():
         self.socket.connect((self.mac_address, self.port))
         
         while True:
-            data = self.socket.recv(1024)
-            print(data)
-            sleep(0.1)
+            data = self.socket.recv(32)
+            print(bytes.hex(bytes(data)))
+            #sleep(0.1)
 
         self.socket.close()
 
