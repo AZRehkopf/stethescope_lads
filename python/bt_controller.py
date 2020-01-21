@@ -53,11 +53,20 @@ class BluetoothController():
         self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         self.socket.connect((self.mac_address, self.port))
         
+        byte_buffer = []
+        carry = None 
+
         while True:
             data = self.socket.recv(32)
-            print(bytes.hex(bytes(data)))
-            #sleep(0.1)
+            parsed_data = bytes.hex(bytes(data))
+            
+            for block in range(2,len(parsed_data)+1,2):
+	            byte_buffer.append(parsed_data[block-2:block])
 
+            if len(byte_buffer) >= 10000:
+                print(byte_buffer)
+                byte_buffer = []
+        
         self.socket.close()
 
 if __name__ == "__main__":
