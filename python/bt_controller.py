@@ -63,7 +63,14 @@ class BluetoothController():
 
         while self.controller.receive_data:
             # Get Data from bluetooth buffer
-            data = self.socket.recv(1024)
+            try:
+                data = self.socket.recv(1024)
+            except ConnectionResetError:
+                LOGGER.error("Lost connection with ESP32 device.")
+                self.socket.close()
+                self.controller.receive_data = False
+                return
+
             parsed_data = bytes.hex(bytes(data))
 
             # Check if there was a carry over from the last set of values

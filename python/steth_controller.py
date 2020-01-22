@@ -43,4 +43,7 @@ class StethescopeController():
 
 if __name__ == "__main__":
     stethescope = StethescopeController()
-    stethescope.start_listening()
+    try:
+        stethescope.start_listening()
+    except KeyboardInterrupt:
+        LOGGER.info("Listening stopped by user.")
