@@ -60,7 +60,7 @@ class BluetoothController():
 
         while self.controller.receive_data:
             # Get Data from bluetooth buffer
-            data = self.socket.recv(32)
+            data = self.socket.recv(1024)
             parsed_data = bytes.hex(bytes(data))
 
             # Check if there was a carry over from the last set of values
@@ -81,7 +81,7 @@ class BluetoothController():
             # Print every 10000 samples
             # Add code to save data to file here if necessary
             if len(byte_buffer) >= 10000:
-                #print(byte_buffer)
+                print(byte_buffer)
                 byte_buffer = []
         
         self.socket.close()
