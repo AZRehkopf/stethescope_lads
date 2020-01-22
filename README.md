@@ -7,6 +7,8 @@ This is the repository for our capstone project. Please use this file to keep tr
 
 - [x] Blutooth Communication
 - [x] Dummy Data Transmission
+- [ ] Seperate Data
+- [ ] Save Data
 
 ### Joshua
 
@@ -14,7 +16,7 @@ This is the repository for our capstone project. Please use this file to keep tr
 
 ## Bugs
 
-There is no code yet, so there better not be any bugs.
+:bug: :ant: :beetle:
 
 ## Instructions 
 
