@@ -91,7 +91,7 @@ class BluetoothController():
             # Print every 10000 samples
             # Add code to save data to file here if necessary
             if len(byte_buffer) >= 10000:
-                print(byte_buffer)
+                self.controller.raw_data_stream = byte_buffer
                 byte_buffer = []
 
         # Command transmitter to stop transmitting         
