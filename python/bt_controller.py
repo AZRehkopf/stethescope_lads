@@ -13,7 +13,7 @@ from time import sleep
 import bluetooth
 
 ### Globals ###
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("bluetooth")
 
 class BluetoothController():
     def __init__(self, controller):
@@ -26,10 +26,14 @@ class BluetoothController():
 
     def search_for_device(self):
         LOGGER.info("Searching for bluetooth devices...")
+        
+        # Look for any nearby devices that are ready to pair
         detected_devices = bluetooth.discover_devices(lookup_names=True)
 
+        # Look for the ESP32 device and connect if found
         if len(detected_devices) == 0:
             LOGGER.error("No devices were detected. Make sure the deivce is powered on.")
+            sys.exit()
         else:
             count = 0
             target_device = None
@@ -41,6 +45,7 @@ class BluetoothController():
             
             if count == 0:
                 LOGGER.error("No ESP32 devices were detected. Make sure the deivce is powered on.")
+                sys.exit()
             elif count == 1:
                 LOGGER.info("Device found.")
                 self.mac_address = target_device[0].decode("utf-8")
@@ -89,10 +94,9 @@ class BluetoothController():
                 carry = parsed_data[-remainder:]
 
             # Print every 10000 samples
-            # Add code to save data to file here if necessary
             if len(byte_buffer) >= 10000:
-                print(byte_buffer)
-                byte_buffer = []
+                self.controller.raw_data_stream = byte_buffer
+                byte_buffer = [] 
 
         # Command transmitter to stop transmitting         
         self.socket.send(b'0')
