@@ -10,24 +10,54 @@
 
 int ecgValue;
 int micValue;
+bool collectData = false;
 
 BluetoothSerial SerialBT;
 
-void setup() {
-  SerialBT.begin("ESP32test"); //Bluetooth device name
+void collectAndTransmit() {
+  //Write starting value so receiver knows it is synced
+  SerialBT.write(0xFF);
+  SerialBT.write(0xFF);
 
+  //Collect data until receiver sends byte
+  while (collectData) {
+    ecgValue = analogRead(ECGPIN);
+    SerialBT.write(ecgValue >> 8);
+    SerialBT.write(ecgValue);
+  
+    micValue = analogRead(MICPIN);
+    SerialBT.write(micValue >> 8);
+    SerialBT.write(micValue);
+    delay(0.5);
+
+    if (SerialBT.available()) {
+      SerialBT.read();
+      collectData = false;
+    }
+  }
+}
+
+void setup() {
+  //Bluetooth device name
+  SerialBT.begin("ESP32test");
+
+  //Pin configurations
   pinMode (LEDPIN, OUTPUT);
   pinMode (ECGPIN, INPUT);
   pinMode (MICPIN, INPUT);
 }
 
 void loop() {
-  ecgValue = analogRead(ECGPIN);
-  SerialBT.write(ecgValue >> 8);
-  SerialBT.write(ecgValue);
-
-  micValue = analogRead(MICPIN);
-  SerialBT.write(micValue >> 8);
-  SerialBT.write(micValue);
-  delay(0.5);
+  //Wait for byte from python before transmitting
+  if (SerialBT.available()) {
+    SerialBT.read();
+    
+    //Delay for python to get ready to receive
+    delay(100);
+    
+    //Start collecting data
+    collectData = true;
+    collectAndTransmit();
+  }
+  delay(20);
 }

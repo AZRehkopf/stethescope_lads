@@ -55,6 +55,9 @@ class BluetoothController():
         self.socket.connect((self.mac_address, self.port))
         LOGGER.info("Ready to receive data.")
 
+        # Sending byte commands transmitter to begin
+        self.socket.send(b'1')
+
         byte_buffer = []
         carry = None 
 
@@ -83,7 +86,9 @@ class BluetoothController():
             if len(byte_buffer) >= 10000:
                 print(byte_buffer)
                 byte_buffer = []
-        
+
+        # Command transmitter to stop transmitting         
+        self.socket.send(b'0')
         self.socket.close()
 
 if __name__ == "__main__":
