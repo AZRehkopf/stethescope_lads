@@ -5,8 +5,8 @@ This is the repository for our capstone project. Please use this file to keep tr
 
 ### Andrew
 
-- [ ] Blutooth Communication
-- [ ] Dummy Data Transmission
+- [x] Blutooth Communication
+- [x] Dummy Data Transmission
 
 ### Joshua
 
