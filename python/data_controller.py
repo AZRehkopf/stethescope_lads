@@ -4,6 +4,7 @@
 ### Imports ###
 
 # Built-ins
+import csv
 import logging
 import os
 import sys
@@ -68,7 +69,19 @@ class DataController():
         # Pass split data to the controller and reset
         self.controller.ecg_data = self.ecg_data
         self.controller.mic_data = self.mic_data
+        
         self.ecg_data = []
         self.mic_data = []
 
+        self.save_data()
+
         LOGGER.info("Data processing complete")
+    
+    def save_data(self):
+        with open(os.path.join(self.controller.data_dir, self.controller.ecg_file_name),'a') as ecg_file:
+        	writer = csv.writer(ecg_file)
+        	writer.writerow(self.controller.ecg_data)
+
+        with open(os.path.join(self.controller.data_dir, self.controller.mic_file_name),'a') as mic_file:
+        	writer = csv.writer(mic_file)
+        	writer.writerow(self.controller.mic_data)

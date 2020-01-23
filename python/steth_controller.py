@@ -4,6 +4,7 @@
 ### Imports ###
 
 # Built-ins
+import datetime
 import logging
 import os
 import sys
@@ -19,9 +20,13 @@ from data_controller import DataController
 ### Globals ###
 
 LOGGING_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
 
 if not os.path.isdir(LOGGING_DIR):
     os.mkdir(LOGGING_DIR)
+
+if not os.path.isdir(DATA_DIR):
+    os.mkdir(DATA_DIR)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,8 +45,11 @@ class StethescopeController():
         self.bluetooth_module = BluetoothController(self)
         self.data_module = DataController(self)
         
-        # List for tracking all child threads
+        # General class variables
         self.child_threads = []
+        self.data_dir = DATA_DIR
+        self.ecg_file_name = None
+        self.mic_file_name = None
 
         # Control signals
         self.receive_data = False
@@ -55,6 +63,11 @@ class StethescopeController():
         LOGGER.info("Beginning listening session...")
         self.receive_data = True
         
+        # Generate file names for raw data
+        current_dt = datetime.datetime.now()
+        self.ecg_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_ecg_data.csv")
+        self.mic_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_mic_data.csv")
+
         # Spawn thread for handling received data
         data_processing_thread = threading.Thread(target=stethescope.data_module.wait_for_raw_data, 
                                                     daemon=True)
