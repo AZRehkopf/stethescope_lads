@@ -14,6 +14,7 @@ from time import sleep
 # Local imports
 from bt_controller import BluetoothController
 from data_controller import DataController
+from data_preproc import DataPreproc
 
 # Third party imports
 
@@ -44,6 +45,7 @@ class StethescopeController():
         # Child modules for handling various components
         self.bluetooth_module = BluetoothController(self)
         self.data_module = DataController(self)
+        self.data_preproc = DataPreproc(self)
         
         # General class variables
         self.child_threads = []
@@ -69,11 +71,16 @@ class StethescopeController():
         self.mic_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_mic_data.csv")
 
         # Spawn thread for handling received data
-        data_processing_thread = threading.Thread(target=stethescope.data_module.wait_for_raw_data, 
+        data_handling_thread = threading.Thread(target=self.data_module.wait_for_raw_data, 
+                                                    daemon=True)
+        data_handling_thread.start()
+        self.child_threads.append(data_handling_thread)
+        
+        data_processing_thread = threading.Thread(target=self.data_preproc.find_packet,
                                                     daemon=True)
         data_processing_thread.start()
         self.child_threads.append(data_processing_thread)
-        
+
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
         self.bluetooth_module.connect_and_listen()
