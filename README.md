@@ -9,7 +9,7 @@ This is the repository for our capstone project. Please use this file to keep tr
 - [x] Dummy Data Transmission
 - [x] Seperate Data
 - [x] Save Data
-- [ ] Basic Interface Mockup
+- [x] Basic Interface Mockup
 - [ ] Graphing Library
 - [ ] Python electron communication
 
@@ -23,4 +23,9 @@ This is the repository for our capstone project. Please use this file to keep tr
 
 ## Instructions 
 
-¯\\_(ツ)_/¯ 
+### Running the Interface
+
+- First you will need to install npm which can be found [here](https://nodejs.org/en/)
+- Open a terminal or command line instance and navigate to the electron folder in the repo
+- Run the command `npm ci` and the reqired dependancies will be installed
+- Run the command `npm start` and the interface will render in a window
