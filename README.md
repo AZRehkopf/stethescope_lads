@@ -9,6 +9,9 @@ This is the repository for our capstone project. Please use this file to keep tr
 - [x] Dummy Data Transmission
 - [x] Seperate Data
 - [x] Save Data
+- [ ] Basic Interface Mockup
+- [ ] Graphing Library
+- [ ] Python electron communication
 
 ### Joshua
 
