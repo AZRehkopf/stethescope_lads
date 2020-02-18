@@ -3,3 +3,4 @@
 *.log
 *.pyc
 *.csv
+electron/node_modules/
