@@ -109,7 +109,6 @@ if __name__ == "__main__":
     plt.plot(range(0,data_proc.mic_filt.size),np.abs(data_proc.mic_filt))
     plt.title("Filtered Data")
     plt.tight_layout()
-
    
     # Plot filter info
     w, h = signal.freqz(data_proc.filt_b,data_proc.filt_a,fs = data_proc.FS)
@@ -136,10 +135,3 @@ if __name__ == "__main__":
     plt.title("Group Delay (rounded to nearest integer)")
 
     plt.show()
-
-
-
-
-
-
-

@@ -16,18 +16,20 @@ from bt_controller import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
 
-# Third party imports
-
 ### Globals ###
 
 LOGGING_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+
+### File Checks ###
 
 if not os.path.isdir(LOGGING_DIR):
     os.mkdir(LOGGING_DIR)
 
 if not os.path.isdir(DATA_DIR):
     os.mkdir(DATA_DIR)
+
+### Logging Configuration ###
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,6 +41,8 @@ logging.basicConfig(
     ])
 
 LOGGER = logging.getLogger("controller")
+
+### Classes ###
 
 class StethescopeController():
     def __init__(self):
@@ -84,7 +88,9 @@ class StethescopeController():
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
         self.bluetooth_module.connect_and_listen()
-        
+
+### Main ###
+
 if __name__ == "__main__":
     # Code for testing the entire system
     stethescope = StethescopeController()
