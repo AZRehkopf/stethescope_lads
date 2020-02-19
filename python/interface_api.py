@@ -41,7 +41,7 @@ class Interface_API():
             tcp_socket.listen()
             self.conn, self.addr = tcp_socket.accept()
 
-        LOGGER.info(f"Listening for requests from the interface on port {self.port}")
+        LOGGER.info(f"Interface connection extablished, listening for requests")
         while True:
                 try:
                     data = self.conn.recv(1024)
@@ -57,4 +57,3 @@ if __name__ == "__main__":
     # Code for testing the interface apis
     api = Interface_API(None)
     api.connect_to_interface()
-    

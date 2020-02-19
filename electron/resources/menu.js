@@ -1,3 +1,21 @@
+const net = require('net');
+
+var client = new net.Socket();
+
+client.connect(65535, '127.0.0.1', function() {
+    console.log('Connected to the python interface api');
+    //client.write('log');
+});
+
+client.on('data', function(data) {
+    parsedData = JSON.parse(data.toString('utf8'));
+    parseTCP(parsedData);
+});
+
+client.on('close', function() {
+	console.log('Connection closed');
+});
+
 var ctx = document.getElementById('ecgData').getContext('2d');
 var myChart = new Chart(ctx, {
     type: 'line',

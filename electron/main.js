@@ -9,8 +9,7 @@ const {ipcMain, app, BrowserWindow, Menu} = electron;
 let mainWindow;
 
 app.on('ready', function() {
-    exec('interface_api.exe');
-    
+
     setTimeout(function () {  
         // Generate first widnow
     mainWindow = new BrowserWindow({
@@ -18,6 +17,9 @@ app.on('ready', function() {
         resizable: false,
         height: 600,
         width: 800,
+        webPreferences: {
+            nodeIntegration: true
+        }
     });
     // Load html file into the window 
     mainWindow.loadURL(url.format({

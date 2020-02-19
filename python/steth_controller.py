@@ -15,6 +15,7 @@ from time import sleep
 from bt_controller import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
+from interface_api import Interface_API
 
 ### Globals ###
 
@@ -50,6 +51,7 @@ class StethescopeController():
         self.bluetooth_module = BluetoothController(self)
         self.data_module = DataController(self)
         self.data_preproc = DataPreproc(self)
+        self.interface = Interface_API(self)
         
         # General class variables
         self.child_threads = []
@@ -84,6 +86,11 @@ class StethescopeController():
                                                     daemon=True)
         data_processing_thread.start()
         self.child_threads.append(data_processing_thread)
+
+        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
+                                                    daemon=True)
+        interface_api_thread.start()
+        self.child_threads.append(interface_api_thread)
 
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
