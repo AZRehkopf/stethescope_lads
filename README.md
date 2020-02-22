@@ -10,8 +10,8 @@ This is the repository for our capstone project. Please use this file to keep tr
 - [x] Seperate Data
 - [x] Save Data
 - [x] Basic Interface Mockup
-- [ ] Graphing Library
-- [ ] Python electron communication
+- [x] Graphing Library
+- [x] Python electron communication
 
 ### Joshua
 

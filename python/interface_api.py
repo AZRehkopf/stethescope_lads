@@ -4,6 +4,7 @@
 ### Imports ###
 
 # Built-ins
+import json
 import logging
 import os
 import socket
@@ -36,7 +37,7 @@ class Interface_API():
             try:
                 tcp_socket.bind((self.host, self.port))
             except OSError:
-                LOGGER.error("Could not connect ")    
+                LOGGER.error("Could not connect")    
                 sys.exit()
             tcp_socket.listen()
             self.conn, self.addr = tcp_socket.accept()
@@ -47,7 +48,15 @@ class Interface_API():
                     data = self.conn.recv(1024)
                     data_string = data.decode("utf-8")
                     
-                    print(data_string)
+                    parsed_data = json.loads(data_string)
+                    
+                    if parsed_data['cmd'] == 'start':
+                        LOGGER.info("Start command received")
+                        self.controller.receive_data = True
+                    elif parsed_data['cmd'] == 'stop':
+                        LOGGER.info("Stop command received")
+                        self.controller.receive_data = False
+                        
                 except ConnectionResetError:
                     LOGGER.info("Lost connection with the interface exiting")
                     sys.exit()

@@ -40,7 +40,17 @@ h2 {
 
 #settings {
     margin-left: 725px;
-    margin-top: -495px;
+    margin-top: -485px;
+}
+
+#start {
+    margin-left: 625px;
+    margin-top: -425px;
+}
+
+#stop {
+    margin-left: 675px;
+    margin-top: -36px;
 }
 
 #heart-rate {

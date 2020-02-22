@@ -81,3 +81,18 @@ var myChart = new Chart(ctx, {
         
     }
 });
+
+// Click Events
+
+document.getElementById("start").addEventListener("click", startRecording);
+document.getElementById("stop").addEventListener("click", stopRecording);
+
+function startRecording() {
+    var tcp_command = {"cmd": "start", "data": null}
+    client.write(JSON.stringify(tcp_command))
+}
+
+function stopRecording() {
+    var tcp_command = {"cmd": "stop", "data": null}
+    client.write(JSON.stringify(tcp_command))
+}
