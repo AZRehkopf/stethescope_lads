@@ -89,16 +89,16 @@ if __name__ == "__main__":
 
     # Plotting...
     # Plot FFT before and after filtering
-    plt.figure(1)
-    plt.subplot(211)
-    # plt.plot(range(0,data_proc.mic_fft.size),np.abs(data_proc.mic_fft))
-    plt.plot(range(0,data_proc.mic_fft.size),20 * np.log10(abs(data_proc.mic_fft)))
-    plt.title("Raw FFT [dB]")
-    plt.subplot(212)
-    # plt.plot(range(0,data_proc.mic_filt_fft.size),np.abs(data_proc.mic_filt_fft))
-    plt.plot(range(0,data_proc.mic_filt_fft.size),20 * np.log10(abs(data_proc.mic_filt_fft)))
-    plt.title("Filtered FFT [dB]")
-    plt.tight_layout()
+    # plt.figure(1)
+    # plt.subplot(211)
+    # # plt.plot(range(0,data_proc.mic_fft.size),np.abs(data_proc.mic_fft))
+    # plt.plot(range(0,data_proc.mic_fft.size),20 * np.log10(abs(data_proc.mic_fft)))
+    # plt.title("Raw FFT [dB]")
+    # plt.subplot(212)
+    # # plt.plot(range(0,data_proc.mic_filt_fft.size),np.abs(data_proc.mic_filt_fft))
+    # plt.plot(range(0,data_proc.mic_filt_fft.size),20 * np.log10(abs(data_proc.mic_filt_fft)))
+    # plt.title("Filtered FFT [dB]")
+    # plt.tight_layout()
 
     # Plot signal before and after filtering
     plt.figure(2)
