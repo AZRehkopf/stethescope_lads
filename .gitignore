@@ -1,5 +1,6 @@
-
-.DS_Store
-*.log
-*.pyc
+electron/node_modules/
+python/pycache
 *.csv
+*.pyc
+*.log
+.DS_Store

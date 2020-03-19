@@ -15,8 +15,8 @@ from time import sleep
 from bt_controller import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
-
-# Third party imports
+from data_classifier import DataClassifier
+from interface_api import Interface_API
 
 ### Globals ###
 
@@ -46,6 +46,8 @@ class StethescopeController():
         self.bluetooth_module = BluetoothController(self)
         self.data_module = DataController(self)
         self.data_preproc = DataPreproc(self)
+        self.data_classifier = DataClassifier(self)
+        self.interface = Interface_API(self)
         
         # General class variables
         self.child_threads = []
@@ -81,10 +83,29 @@ class StethescopeController():
         data_processing_thread.start()
         self.child_threads.append(data_processing_thread)
 
+        data_classifier_thread = threading.Thread(target=self.data_classifier.find_packet,
+                                                    daemon=True)
+        self.child_threads.append(data_classifier_thread)
+
+        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
+                                                    daemon=True)
+        interface_api_thread.start()
+        self.child_threads.append(interface_api_thread)
+
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
         self.bluetooth_module.connect_and_listen()
         
+        while True:
+            if self.receive_data:
+                data_handling_thread.start()
+                data_processing_thread.start()
+                data_classifier_thread.start()
+                self.bluetooth_module.connect_and_listen()
+                LOGGER.info("Data pipe closed")
+
+### Main ###
+
 if __name__ == "__main__":
     # Code for testing the entire system
     stethescope = StethescopeController()
