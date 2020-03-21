@@ -11,7 +11,7 @@ from time import sleep
 # Third party imports
 import bluetooth
 import numpy as np
-from scipy import fft,signal
+from scipy import signal
 
 # For testing
 import matplotlib.pyplot as plt
@@ -25,6 +25,12 @@ class DataClassifier():
     def __init__(self, controller):
         self.controller = controller
 
+        # Filter specs
+        self.fc = 50 # Cutoff frequency
+        self.filt_order = 12
+        self.FS = 4000
+        self.filt_coeffs = signal.butter(self.filt_order,self.fc,fs=self.FS,output='sos')
+        
         # For test (plotting 'real-time')
         self.itr = 0
         
@@ -41,12 +47,14 @@ class DataClassifier():
             sleep(0.2)
 
     def data_stream(self,raw_mic,raw_ecg):
-
-        print('Hi')
+        
+        
+        # print('Hi')
         # self.plotter_fn(raw_ecg) # testing purposes
         
         # Filter data... 
-        # ...
+        mic_filt = signal.sosfiltfilt(self.filt_coeffs,raw_mic)
+
         # Find ECG peaks 
         # pk_locs = ecg_peaks(raw_ecg)
         # Average PCG waveform (based on ECG peaks)
