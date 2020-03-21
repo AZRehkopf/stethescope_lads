@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Stethoscope Lads</title>
+
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+    <script src='dependancies/jquery-3.4.0.min.js')></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="dependancies/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="dependancies/Chart.min.css">
+    <script src="dependancies/semantic.min.js"></script>
+    <script src="dependancies/Chart.min.js"></script> 
+</head>
+
+<body>
+    <!-- Inital Layout-->
+    <div id="heading">
+        <h2 class="ui header">
+            <i class="inverted grey stethoscope icon"></i>
+            <div class="content">
+                Digital Stethoscope
+                <div class="sub header">Simple heart health monitoring</div>
+            </div>
+        </h2>
+    </div>
+    
+<div class="chart-container">
+    <canvas id="ecgData" width="50" height="50"></canvas>
+</div>
+
+<div class="chart-container">
+    <canvas id="micData" width="50" height="50"></canvas>
+</div>
+
+<div id="settings">
+        <button class="circular inverted ui icon button" id="settingsBtn">
+                <i class="icon cog"></i>
+        </button>
+</div>
+
+<div id="heart-rate">
+    <div class="ui small inverted statistics">
+        <div class="ui tiny statistic">
+            <div class="value">
+            <i class="inverted grey heartbeat icon"></i>
+            67
+            </div>
+            <div class="inverted label">
+            Heart Rate
+            </div>
+        </div>
+    </div>
+</div> 
+
+<div id="status">
+    <div class="ui small inverted statistics">
+        <div class="ui tiny green statistic">
+            <div id="status">
+                <a class="ui large green label" id="statusIcon">No Issues Detected</a>
+            </div>
+            <div class="label" id="status-label">
+            Analysis
+            </div>
+        </div>
+    </div>
+</div> 
+
+<div id="start">
+        <button class="circular inverted green ui icon button" id="settingsBtn">
+                <i class="icon clipboard check"></i>
+        </button>
+</div>
+
+<div id="stop">
+        <button class="circular inverted red ui icon button" id="settingsBtn">
+                <i class="icon ban"></i>
+        </button>
+</div>
+
+
+<script src="menu.js"></script>
+</html>

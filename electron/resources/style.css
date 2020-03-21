@@ -1,0 +1,77 @@
+body {
+    background-color: #1F2123 !important;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+h2 {
+    color: whitesmoke !important;
+}
+
+.btnSpacer {
+    height: 5px;
+}
+
+.sub.header {
+    color: whitesmoke !important;
+}
+
+.modalBtnContainer {
+    float: right;
+}
+
+.ui.checkbox {
+    width: 12px;
+    margin-right: -8px !important;
+}
+
+.ui.green.inverted.header {
+    cursor: pointer !important;
+}
+
+.ui.red.inverted.header {
+    cursor: pointer !important;
+}
+
+#heading {
+    margin-top: 30px;
+    margin-left: 40px;
+}
+
+#settings {
+    margin-left: 725px;
+    margin-top: -485px;
+}
+
+#start {
+    margin-left: 625px;
+    margin-top: -425px;
+}
+
+#stop {
+    margin-left: 675px;
+    margin-top: -36px;
+}
+
+#heart-rate {
+    margin-left: 645px;
+    margin-top: 90px;
+}
+
+#status {
+    margin-left: 310px;
+    margin-top: 85px;
+}
+
+#status-label {
+    margin-left: 310px;
+    margin-top: 5px;
+}
+
+.chart-container {
+    width: 600px;
+    height: 225px;
+    padding-left: 30px;
+    padding-top: 20px;
+
+}

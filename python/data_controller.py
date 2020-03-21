@@ -10,6 +10,7 @@ import os
 import sys
 import threading
 from time import sleep
+import copy
 
 ### Globals ###
 LOGGER = logging.getLogger("data")
@@ -72,6 +73,14 @@ class DataController():
 
         self.save_data(self.mic_data,self.ecg_data)
 
+        # For rapidly updating stream
+        self.controller.ecg_data_fast = copy.copy(self.ecg_data)
+        self.controller.mic_data_fast = copy.copy(self.mic_data)
+        # For slow (classification) stream
+        self.controller.ecg_data_slow = copy.copy(self.ecg_data)
+        self.controller.mic_data_slow = copy.copy(self.mic_data)
+
+        # Reset
         self.ecg_data = [] 
         self.mic_data = [] 
 

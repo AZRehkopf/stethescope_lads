@@ -50,15 +50,17 @@ class BluetoothController():
                 LOGGER.info("Device found.")
                 self.mac_address = target_device[0].decode("utf-8")
                 self.name = target_device[1]
+                
+                LOGGER.info("Opening connection with the ESP32 device.")
+        
+                self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+                self.socket.connect((self.mac_address, self.port))
+                LOGGER.info("Ready to receive data.")
             else:
                 LOGGER.error("Multiple ESP32 devices were detected, no handling for this yet")
 
     def connect_and_listen(self):
-        LOGGER.info("Opening connection with the ESP32 device.")
-        
-        self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        self.socket.connect((self.mac_address, self.port))
-        LOGGER.info("Ready to receive data.")
+        LOGGER.info("Starting data pipe...")
 
         # Sending byte commands transmitter to begin
         self.socket.send(b'1')
@@ -68,6 +70,7 @@ class BluetoothController():
 
         while self.controller.receive_data:
             # Get Data from bluetooth buffer
+            
             try:
                 data = self.socket.recv(1024)
             except ConnectionResetError:
@@ -98,6 +101,7 @@ class BluetoothController():
                 self.controller.raw_data_stream = byte_buffer
                 byte_buffer = [] 
 
+        LOGGER.info("Closing data pipe...")
         # Command transmitter to stop transmitting         
         self.socket.send(b'0')
         self.socket.close()

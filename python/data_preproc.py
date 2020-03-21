@@ -38,12 +38,12 @@ class DataPreproc():
     def find_packet(self):
         # While in receiving state look for new raw packet
         while self.controller.receive_data:
-            if self.controller.mic_data != None:
+            if self.controller.mic_data_fast != None:
                 LOGGER.info("find_packet (DataPreproc) recieved packet.")
                 # Spawn thread to handle new packet
-                handler = threading.Thread(target=self.mic_packet, args=(self.controller.mic_data,))
+                handler = threading.Thread(target=self.mic_packet, args=(self.controller.mic_data_fast,))
                 handler.start()
-                self.controller.mic_data = None 
+                self.controller.mic_data_fast = None 
 
             sleep(0.2)
 
@@ -51,7 +51,7 @@ class DataPreproc():
         # This code to process data
         mic_np = np.array(packet) # numpy variable
         LOGGER.info("mic_packet recieved packet. Data size: " + str(mic_np.size))
-
+        
         # Compute FFT 
         mic_fft = fft.rfft(mic_np - mic_np.mean()) # remove mean before computing FFT
 

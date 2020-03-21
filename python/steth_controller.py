@@ -62,10 +62,15 @@ class StethescopeController():
         self.raw_data_stream = None
         self.ecg_data = None
         self.mic_data = None
+            # For rapidly updating stream
+        self.ecg_data_fast = None
+        self.mic_data_fast = None
+            # For slow (classification) stream
+        self.ecg_data_slow = None
+        self.mic_data_slow = None
 
     def start_listening(self):
         LOGGER.info("Beginning listening session...")
-        self.receive_data = True
         
         # Generate file names for raw data
         current_dt = datetime.datetime.now()
@@ -75,12 +80,10 @@ class StethescopeController():
         # Spawn thread for handling received data
         data_handling_thread = threading.Thread(target=self.data_module.wait_for_raw_data, 
                                                     daemon=True)
-        data_handling_thread.start()
         self.child_threads.append(data_handling_thread)
         
         data_processing_thread = threading.Thread(target=self.data_preproc.find_packet,
                                                     daemon=True)
-        data_processing_thread.start()
         self.child_threads.append(data_processing_thread)
 
         data_classifier_thread = threading.Thread(target=self.data_classifier.find_packet,
@@ -94,7 +97,6 @@ class StethescopeController():
 
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
-        self.bluetooth_module.connect_and_listen()
         
         while True:
             if self.receive_data:

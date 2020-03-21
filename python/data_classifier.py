@@ -25,12 +25,12 @@ class DataClassifier():
     def find_packet(self):
         # While in receiving state look for new raw packet
         while self.controller.receive_data:
-            if self.controller.ecg_data != None:
+            if self.controller.mic_data_slow != None:
                 LOGGER.info("find_packet (DataClassifier) recieved packet.")
                 # Spawn thread to handle new packet
-                handler = threading.Thread(target=self.data_stream, args=(self.controller.mic_data,self.controller.ecg_data))
+                handler = threading.Thread(target=self.data_stream, args=(self.controller.mic_data_slow,self.controller.ecg_data_slow))
                 handler.start()
-                self.controller.ecg_data = None 
+                self.controller.mic_data_slow = None 
 
             sleep(0.2)
 
