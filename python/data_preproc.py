@@ -15,7 +15,10 @@ from scipy import fft,signal
 
 # Third party imports for testing
 import matplotlib.pyplot as plt
+import matplotlib
 import time
+matplotlib.use('agg') # for plotting...
+
 
 ### Globals ###
 LOGGER = logging.getLogger("preproc")
@@ -24,16 +27,25 @@ class DataPreproc():
     def __init__(self, controller):
         self.controller = controller
         
-        # Filter Setup  (!!! make this an input in controller (i.e. 'user' defined) !!!)
-        # ------------
-        filt_len = 111 # order + 1
-        fc = 50 # Cutoff frequency
-        self.FS = 4000 # Sampling rate
-        # Create filter 
-        self.filt_b = signal.firwin(filt_len,fc,fs=self.FS)
-        self.filt_a = 1 # since FIR filter
-        # Filter initial conditions
-        self.init_cond = signal.lfilter_zi(self.filt_b,self.filt_a)
+        # # Filter Setup  (!!! make this an input in controller (i.e. 'user' defined) !!!)
+        # filt_len = 111 # order + 1
+        # fc = 50 # Cutoff frequency
+        # self.FS = 4000 # Sampling rate
+        # # Create filter 
+        # self.filt_b = signal.firwin(filt_len,fc,fs=self.FS)
+        # self.filt_a = 1 # since FIR filter
+        # # Filter initial conditions
+        # self.init_cond = signal.lfilter_zi(self.filt_b,self.filt_a)
+
+        self.fc = 50 # Cutoff frequency
+        self.filt_order = 12
+        self.FS = 4000
+        self.filt_coeffs = signal.butter(self.filt_order,self.fc,fs=self.FS,output='sos')
+
+
+        # For test (plotting 'real-time')
+        self.itr = 0
+
         
     def find_packet(self):
         # While in receiving state look for new raw packet
@@ -51,21 +63,35 @@ class DataPreproc():
         # This code to process data
         mic_np = np.array(packet) # numpy variable
         LOGGER.info("mic_packet recieved packet. Data size: " + str(mic_np.size))
-        
+
         # Compute FFT 
         mic_fft = fft.rfft(mic_np - mic_np.mean()) # remove mean before computing FFT
 
         # Filter (& update filter initial conditions for next packet)
-        mic_filt, self.init_cond = signal.lfilter(self.filt_b,self.filt_a,mic_np,zi = self.init_cond)
+        # mic_filt, self.init_cond = signal.lfilter(self.filt_b,self.filt_a,mic_np,zi = self.init_cond)
+        mic_filt = signal.sosfiltfilt(self.filt_coeffs,packet)
 
         # FFT of filtered data
         mic_filt_fft = fft.rfft(mic_filt - mic_filt.mean()) # remove mean before computing FFT
+
+        self.plotter_fn(mic_filt)
 
         # Update controller
         # self.controller. ... 
         self.mic_fft = mic_fft
         self.mic_filt = mic_filt
         self.mic_filt_fft = mic_filt_fft
+
+    def plotter_fn(self,data):
+        # Plot
+        dir_name = '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/test_plot_fast/'
+        ax = []
+        fig=plt.figure()
+        ax.append(fig.add_subplot(1, 1, 1))
+        ax[0].plot(data)
+        plt.savefig(dir_name+'test'+str(self.itr),bbox_inches='tight',dpi=50)
+        plt.close(fig)
+        self.itr += 1
 
 
 if __name__ == "__main__":
