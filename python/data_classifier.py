@@ -13,7 +13,10 @@ import bluetooth
 import numpy as np
 from scipy import fft,signal
 
-
+# For testing
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('agg') # for plotting...
 
 ### Globals ###
 LOGGER = logging.getLogger("classifier")
@@ -21,6 +24,9 @@ LOGGER = logging.getLogger("classifier")
 class DataClassifier():
     def __init__(self, controller):
         self.controller = controller
+
+        # For test (plotting 'real-time')
+        self.itr = 0
         
     def find_packet(self):
         # While in receiving state look for new raw packet
@@ -37,7 +43,8 @@ class DataClassifier():
     def data_stream(self,raw_mic,raw_ecg):
 
         print('Hi')
-
+        # self.plotter_fn(raw_ecg) # testing purposes
+        
         # Filter data... 
         # ...
         # Find ECG peaks 
@@ -54,6 +61,13 @@ class DataClassifier():
     # def ecg_peaks(self,raw_ecg):
         # Johnny's class/functions...
 
-
-
-
+    def plotter_fn(self,data):
+        # Plot
+        dir_name = '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/test_plot_slow/'
+        ax = []
+        fig=plt.figure()
+        ax.append(fig.add_subplot(1, 1, 1))
+        ax[0].plot(data)
+        plt.savefig(dir_name+'test'+str(self.itr),bbox_inches='tight',dpi=50)
+        plt.close(fig)
+        self.itr += 1
