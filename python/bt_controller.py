@@ -14,6 +14,8 @@ import bluetooth
 
 ### Globals ###
 LOGGER = logging.getLogger("bluetooth")
+CONTROL_PACKET_SIZE = 1
+DATA_PACKET_SIZE = 2
 
 class BluetoothController():
     def __init__(self, controller):
@@ -64,47 +66,72 @@ class BluetoothController():
 
         # Sending byte commands transmitter to begin
         self.socket.send(b'1')
-
-        byte_buffer = []
-        carry = None 
-
-        while self.controller.receive_data:
-            # Get Data from bluetooth buffer
-            
-            try:
-                data = self.socket.recv(1024)
-            except ConnectionResetError:
-                LOGGER.error("Lost connection with ESP32 device.")
-                self.socket.close()
-                self.controller.receive_data = False
-                return
-
-            parsed_data = bytes.hex(bytes(data))
-
-            # Check if there was a carry over from the last set of values
-            if carry != None:
-                byte_buffer.append(int(carry+parsed_data[:4-len(carry)], 16))
-                parsed_data = parsed_data[4-len(carry):]
-                carry = None
-            
-            # Process received data
-            for block in range(4,len(parsed_data)+1,4):
-	            byte_buffer.append(int(parsed_data[block-4:block], 16))
-
-            # Check if there are any incomplete sets of 4 bytes
-            remainder = len(parsed_data) % 4
-            if (remainder) != 0:
-                carry = parsed_data[-remainder:]
-
-            # Print every 10000 samples
-            if len(byte_buffer) >= 10000:
-                self.controller.raw_data_stream = byte_buffer
-                byte_buffer = [] 
+        
+        self.aquire_lock()
+        
+        while True:
+            self.get_samples()
+            self.verify_locked()
 
         LOGGER.info("Closing data pipe...")
+        
         # Command transmitter to stop transmitting         
         self.socket.send(b'0')
         self.socket.close()
+
+    def aquire_lock(self):
+        LOGGER.info("Aquiring lock with ESP32 device...")
+        while True:
+            try:
+                data = self.socket.recv(CONTROL_PACKET_SIZE)
+            except ConnectionResetError:
+                LOGGER.error("Unexepcted error while aquiring lock")
+                self.socket.close()
+                self.controller.receive_data = False
+                return 
+            
+            if data == bytearray(b'\xff'):
+                LOGGER.info("Lock aquired")
+                return
+
+    def get_samples(self):
+        for _ in range(100):
+            try:
+                ecg_sample = self.socket.recv(DATA_PACKET_SIZE)
+                if len(ecg_sample) < 2:
+                    error = self.socket.recv(DATA_PACKET_SIZE - len(ecg_sample))
+                    ecg_sample.extend(error)
+                
+                mic_sample = self.socket.recv(DATA_PACKET_SIZE)
+                if len(mic_sample) < 2:
+                    error = self.socket.recv(DATA_PACKET_SIZE - len(mic_sample))
+                    mic_sample.extend(error)
+
+            except ConnectionResetError:
+                LOGGER.error("Unexepcted error while recieving data packets")
+                self.socket.close()
+                self.controller.receive_data = False
+                return 
+            
+            parsed_ecg = int(bytes.hex(bytes(ecg_sample)), base=16)
+            parsed_mic = int(bytes.hex(bytes(mic_sample)), base=16)
+
+            #print(f"ECG: {parsed_ecg}")
+            #print(f"mic: {parsed_mic}")
+
+    def verify_locked(self):
+        try:
+            data = self.socket.recv(CONTROL_PACKET_SIZE)
+        except ConnectionResetError:
+            LOGGER.error("Unexepcted error while aquiring lock")
+            self.socket.close()
+            self.controller.receive_data = False
+            return 
+        
+        if data != bytearray(b'\xff'):
+            LOGGER.warning("Lock lost, reaquiring...")
+            self.aquire_lock()
+
 
 if __name__ == "__main__":
     # Code for debugging this module

@@ -80,24 +80,25 @@ class StethescopeController():
                                                     daemon=True)
         self.child_threads.append(data_handling_thread)
         
-        data_processing_thread = threading.Thread(target=self.data_preproc.find_packet,
-                                                    daemon=True)
-        self.child_threads.append(data_processing_thread)
+        # data_processing_thread = threading.Thread(target=self.data_preproc.find_packet,
+        #                                             daemon=True)
+        # self.child_threads.append(data_processing_thread)
 
-        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
-                                                    daemon=True)
-        interface_api_thread.start()
-        self.child_threads.append(interface_api_thread)
+        # interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
+        #                                             daemon=True)
+        # interface_api_thread.start()
+        # self.child_threads.append(interface_api_thread)
 
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
         
-        while True:
-            if self.receive_data:
-                data_handling_thread.start()
-                data_processing_thread.start()
-                self.bluetooth_module.connect_and_listen()
-                LOGGER.info("Data pipe closed")
+        #while True:
+        #   if self.receive_data:
+        
+        data_handling_thread.start()
+        #data_processing_thread.start()
+        self.bluetooth_module.connect_and_listen()
+        LOGGER.info("Data pipe closed")
 
 ### Main ###
 
