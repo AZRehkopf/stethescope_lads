@@ -60,6 +60,7 @@ class BluetoothController():
                 LOGGER.info("Ready to receive data.")
             else:
                 LOGGER.error("Multiple ESP32 devices were detected, no handling for this yet")
+                sys.exit()
 
     def connect_and_listen(self):
         LOGGER.info("Starting data pipe...")

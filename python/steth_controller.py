@@ -16,6 +16,7 @@ from bt_controller import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
 from interface_api import Interface_API
+from plotter import Plotter
 
 ### Globals ###
 
@@ -52,6 +53,7 @@ class StethescopeController():
         self.data_module = DataController(self)
         self.data_preproc = DataPreproc(self)
         self.interface = Interface_API(self)
+        self.plot = Plotter(self)
         
         # General class variables
         self.child_threads = []
@@ -88,6 +90,11 @@ class StethescopeController():
         #                                             daemon=True)
         # interface_api_thread.start()
         # self.child_threads.append(interface_api_thread)
+
+        plotting_thread = threading.Thread(target=self.plot.start_plotter,
+                                                     daemon=True) 
+        plotting_thread.start()
+        plotting_thread.join()
 
         # Start bluetooth conection and data transfer
         self.bluetooth_module.search_for_device()
