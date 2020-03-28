@@ -1,8 +1,7 @@
 const net = require('net');
 
 var control_port = new net.Socket();
-var ecg_socket = new net.Socket();
-var mic_socket = new net.Socket();
+var dataSocket = new net.Socket();
 
 // control_port.connect(65535, '127.0.0.1', function() {
 //     console.log('Connected to the python interface api');
@@ -17,18 +16,17 @@ var mic_socket = new net.Socket();
 // 	console.log('Control port closed');
 // });
 
-ecg_socket.connect(65534, '127.0.0.1', function() {
-    console.log('Connected to the ECG data socket');
+dataSocket.connect(65534, '127.0.0.1', function() {
+    console.log('Connected to data socket');
 });
 
-ecg_socket.on('data', function(data) {
-    rawData = data.toString('utf8');
-    dataPoint = parseInt(rawData);
+dataSocket.on('data', function(data) {
+    var parsedData = JSON.parse(data.toString('utf8'));
     
     ECGChart.data.labels.push("");
 
     ECGChart.data.datasets.forEach((dataset) => {
-        dataset.data.push(dataPoint);
+        dataset.data.push(parsedData['ecg']);
     });
 
     ECGChart.data.labels.shift();
@@ -36,25 +34,13 @@ ecg_socket.on('data', function(data) {
     ECGChart.data.datasets.forEach((dataset) => {
         dataset.data.shift();
     });
-    ECGChart.update();
-});
-
-ecg_socket.on('close', function() {
-	console.log('ECG socket closed');
-});
-
-mic_socket.connect(65533, '127.0.0.1', function() {
-    console.log('Connected to the Mic data socket');
-});
-
-mic_socket.on('data', function(data) {
-    rawData = data.toString('utf8');
-    dataPoint = parseInt(rawData);
     
+    ECGChart.update();
+
     micChart.data.labels.push("");
 
     micChart.data.datasets.forEach((dataset) => {
-        dataset.data.push(dataPoint);
+        dataset.data.push(parsedData['mic']);
     });
 
     micChart.data.labels.shift();
@@ -65,20 +51,20 @@ mic_socket.on('data', function(data) {
     micChart.update();
 });
 
-mic_socket.on('close', function() {
-	console.log('ECG socket closed');
+dataSocket.on('close', function() {
+	console.log('Data socket closed');
 });
 
-var startingValues = Array.apply(null, Array(250)).map(Number.prototype.valueOf,0);
-var startingLabels = Array.apply(null, Array(250)).map(String.prototype.valueOf,"")
+var ecgStartingValues = Array.apply(null, Array(250)).map(Number.prototype.valueOf,0);
+var ecgStartingLabels = Array.apply(null, Array(250)).map(String.prototype.valueOf,"")
 
-var ctx = document.getElementById('ecgData').getContext('2d');
-var ECGChart = new Chart(ctx, {
+var ctx_ecg = document.getElementById('ecgData').getContext('2d');
+var ECGChart = new Chart(ctx_ecg, {
     type: 'line',
     data: {
-        labels: startingLabels,
+        labels: ecgStartingLabels,
         datasets: [{
-            data: startingValues,
+            data: ecgStartingValues,
             borderColor: 'rgba(84, 153, 199, 1)',
             borderWidth: 1
         }]
@@ -116,13 +102,16 @@ var ECGChart = new Chart(ctx, {
     }
 });
 
-var ctx = document.getElementById('micData').getContext('2d');
-var micChart = new Chart(ctx, {
+var micStartingValues = Array.apply(null, Array(250)).map(Number.prototype.valueOf,0);
+var micStartingLabels = Array.apply(null, Array(250)).map(String.prototype.valueOf,"")
+
+var ctx_mic = document.getElementById('micData').getContext('2d');
+var micChart = new Chart(ctx_mic, {
     type: 'line',
     data: {
-        labels: startingLabels,
+        labels: micStartingLabels,
         datasets: [{
-            data: startingValues,
+            data: micStartingValues,
             borderColor: 'rgba(0, 150, 136, 1)',
             borderWidth: 1
         }]

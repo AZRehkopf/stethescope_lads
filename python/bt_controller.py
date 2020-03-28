@@ -96,6 +96,9 @@ class BluetoothController():
                 return
 
     def get_samples(self):
+        parsed_ecg = None
+        parsed_mic = None
+        
         for _ in range(100):
             try:
                 ecg_sample = self.socket.recv(DATA_PACKET_SIZE)
@@ -119,6 +122,9 @@ class BluetoothController():
 
             #print(f"ECG: {parsed_ecg}")
             #print(f"mic: {parsed_mic}")
+        
+        self.controller.latest_ecg_value = parsed_ecg
+        self.controller.latest_mic_value = parsed_mic
 
     def verify_locked(self):
         try:
