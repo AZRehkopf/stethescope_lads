@@ -72,6 +72,8 @@ class StethescopeController():
         # Plotting variables
         self.latest_ecg_value = 0
         self.latest_mic_value = 0
+        self.latest_ecg_values = []
+        self.latest_mic_values = []
 
     def start_listening(self):
         LOGGER.info("Beginning listening session...")

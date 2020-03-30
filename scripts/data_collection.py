@@ -4,6 +4,8 @@
 ### Imports ###
 
 # Built-ins
+import csv
+import datetime
 import logging
 import os
 import sys
@@ -12,19 +14,47 @@ from time import sleep
 # Third party imports
 import bluetooth
 
+### File Checks ###
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+LOGGING_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+if not os.path.isdir(LOGGING_DIR):
+    os.mkdir(LOGGING_DIR)
+
+if not os.path.isdir(DATA_DIR):
+    os.mkdir(DATA_DIR)
+
 ### Globals ###
-LOGGER = logging.getLogger("bluetooth")
+
 CONTROL_PACKET_SIZE = 1
 DATA_PACKET_SIZE = 2
 
+### Logging Configuration
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(asctime)s - %(name)s - %(message)s",
+    datefmt='%d/%m/%Y %H:%M:%S',
+    handlers=[
+        logging.FileHandler(os.path.join(LOGGING_DIR, 'python.log')),
+        logging.StreamHandler(sys.stdout)
+    ])
+
+LOGGER = logging.getLogger("data_collection")
+
+
 class BluetoothController():
-    def __init__(self, controller):
-        self.controller = controller
-        
+    def __init__(self):
         self.mac_address = None
         self.name = None
         self.socket = None
         self.port = 1
+
+        current_dt = datetime.datetime.now()
+        self.ecg_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_ecg_data.csv")
+        self.mic_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_mic_data.csv")
+
+        self.ecg_list = []
+        self.mic_list = []
 
     def search_for_device(self):
         LOGGER.info("Searching for bluetooth devices...")
@@ -71,8 +101,13 @@ class BluetoothController():
         self.aquire_lock()
         
         while True:
-            self.get_samples()
-            self.verify_locked()
+            try:
+                self.get_samples()
+                self.verify_locked()
+                self.save_data()
+            except KeyboardInterrupt:
+                LOGGER.info("Data collection stopped by user")
+                break
 
         LOGGER.info("Closing data pipe...")
         
@@ -88,7 +123,6 @@ class BluetoothController():
             except ConnectionResetError:
                 LOGGER.error("Unexepcted error while aquiring lock")
                 self.socket.close()
-                self.controller.receive_data = False
                 return 
             
             if data == bytearray(b'\xff'):
@@ -114,18 +148,10 @@ class BluetoothController():
             except ConnectionResetError:
                 LOGGER.error("Unexepcted error while recieving data packets")
                 self.socket.close()
-                self.controller.receive_data = False
                 return 
             
-            parsed_ecg = int(bytes.hex(bytes(ecg_sample)), base=16)
-            parsed_mic = int(bytes.hex(bytes(mic_sample)), base=16)
-
-            self.controller.latest_ecg_value = parsed_ecg
-            self.controller.latest_mic_value = parsed_mic
-            self.controller.latest_ecg_values.append(self.controller.latest_ecg_value)
-            self.controller.latest_mic_values.append(self.controller.latest_mic_value)
-            #print(f"ECG: {parsed_ecg}")
-            #print(f"mic: {parsed_mic}")
+            self.ecg_list.append(int(bytes.hex(bytes(ecg_sample)), base=16))
+            self.mic_list.append(int(bytes.hex(bytes(mic_sample)), base=16))
 
     def verify_locked(self):
         try:
@@ -133,16 +159,24 @@ class BluetoothController():
         except ConnectionResetError:
             LOGGER.error("Unexepcted error while aquiring lock")
             self.socket.close()
-            self.controller.receive_data = False
             return 
         
         if data != bytearray(b'\xff'):
             LOGGER.warning("Lock lost, reaquiring...")
             self.aquire_lock()
 
+    def save_data(self): 
+        with open(os.path.join(DATA_DIR, self.ecg_file_name),'a') as ecg_file:
+        	writer = csv.writer(ecg_file)
+        	writer.writerow(self.ecg_list) 
+
+        with open(os.path.join(DATA_DIR, self.mic_file_name),'a') as mic_file:
+        	writer = csv.writer(mic_file)
+        	writer.writerow(self.mic_list)
+
+### Main ###
 
 if __name__ == "__main__":
-    # Code for debugging this module
-    test_controller = BluetoothController()
-    test_controller.search_for_device()
-    test_controller.connect_and_listen()
+    bt_controller = BluetoothController()
+    bt_controller.search_for_device()
+    bt_controller.connect_and_listen()

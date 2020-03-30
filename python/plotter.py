@@ -44,8 +44,8 @@ class Plotter():
     def send_data(self):
         while True:
             payload = {
-                'ecg': self.controller.latest_ecg_value, 
-                'mic': self.controller.latest_mic_value
+                'ecg': self.controller.latest_ecg_values, 
+                'mic': self.controller.latest_mic_values
             }
             
             try:
@@ -53,4 +53,4 @@ class Plotter():
             except BrokenPipeError:
                 LOGGER.info("User closed the interface")
                 return
-            sleep(0.25)
+            sleep(0.01)

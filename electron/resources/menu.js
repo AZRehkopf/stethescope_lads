@@ -23,18 +23,19 @@ dataSocket.connect(65534, '127.0.0.1', function() {
 dataSocket.on('data', function(data) {
     var parsedData = JSON.parse(data.toString('utf8'));
     
-    ECGChart.data.labels.push("");
+    for (let index = 0; index < parsedData['ecg']; index++) {
+        ECGChart.data.labels.push("");
+        ECGChart.data.labels.shift();
+        ECGChart.data.datasets.forEach((dataset) => {
+            dataset.data.shift();
+        });
+        
+    }
 
     ECGChart.data.datasets.forEach((dataset) => {
-        dataset.data.push(parsedData['ecg']);
+        dataset.data = dataset.data.concat(parsedData['ecg']);
     });
 
-    ECGChart.data.labels.shift();
-
-    ECGChart.data.datasets.forEach((dataset) => {
-        dataset.data.shift();
-    });
-    
     ECGChart.update();
 
     micChart.data.labels.push("");
