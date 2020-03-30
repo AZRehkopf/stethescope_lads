@@ -174,6 +174,9 @@ class BluetoothController():
         	writer = csv.writer(mic_file)
         	writer.writerow(self.mic_list)
 
+        self.mic_list = []
+        self.ecg_list = []
+
 ### Main ###
 
 if __name__ == "__main__":
