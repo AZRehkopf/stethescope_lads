@@ -23,41 +23,31 @@ dataSocket.connect(65534, '127.0.0.1', function() {
 dataSocket.on('data', function(data) {
     var parsedData = JSON.parse(data.toString('utf8'));
     
-    for (let index = 0; index < parsedData['ecg']; index++) {
-        ECGChart.data.labels.push("");
-        ECGChart.data.labels.shift();
-        ECGChart.data.datasets.forEach((dataset) => {
-            dataset.data.shift();
-        });
-        
-    }
-
     ECGChart.data.datasets.forEach((dataset) => {
         dataset.data = dataset.data.concat(parsedData['ecg']);
+        dataset.data.splice(0,parsedData['ecg'].length);
+    });    
+    
+    ECGChart.update({
+        duration: 0
     });
-
-    ECGChart.update();
-
-    micChart.data.labels.push("");
 
     micChart.data.datasets.forEach((dataset) => {
-        dataset.data.push(parsedData['mic']);
+        dataset.data = dataset.data.concat(parsedData['mic']);
+        dataset.data.splice(0,parsedData['mic'].length);
+    });    
+    
+    micChart.update({
+        duration: 0
     });
-
-    micChart.data.labels.shift();
-
-    micChart.data.datasets.forEach((dataset) => {
-        dataset.data.shift();
-    });
-    micChart.update();
 });
 
 dataSocket.on('close', function() {
 	console.log('Data socket closed');
 });
 
-var ecgStartingValues = Array.apply(null, Array(250)).map(Number.prototype.valueOf,0);
-var ecgStartingLabels = Array.apply(null, Array(250)).map(String.prototype.valueOf,"")
+var ecgStartingValues = Array.apply(null, Array(1250)).map(Number.prototype.valueOf,2000);
+var ecgStartingLabels = Array.apply(null, Array(1250)).map(String.prototype.valueOf,"")
 
 var ctx_ecg = document.getElementById('ecgData').getContext('2d');
 var ECGChart = new Chart(ctx_ecg, {
@@ -73,6 +63,7 @@ var ECGChart = new Chart(ctx_ecg, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,
         legend: {
             display: false
         },
@@ -80,6 +71,12 @@ var ECGChart = new Chart(ctx_ecg, {
         elements: {
             point:{
                 radius: 0
+            },
+            line:{
+                tension: 0,
+                fill: false,
+                stepped: false,
+                borderDash: []
             }
         },
         
@@ -103,8 +100,8 @@ var ECGChart = new Chart(ctx_ecg, {
     }
 });
 
-var micStartingValues = Array.apply(null, Array(250)).map(Number.prototype.valueOf,0);
-var micStartingLabels = Array.apply(null, Array(250)).map(String.prototype.valueOf,"")
+var micStartingValues = Array.apply(null, Array(1250)).map(Number.prototype.valueOf,2000);
+var micStartingLabels = Array.apply(null, Array(1250)).map(String.prototype.valueOf,"")
 
 var ctx_mic = document.getElementById('micData').getContext('2d');
 var micChart = new Chart(ctx_mic, {
@@ -120,6 +117,7 @@ var micChart = new Chart(ctx_mic, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,
         legend: {
             display: false
         },
@@ -127,6 +125,12 @@ var micChart = new Chart(ctx_mic, {
         elements: {
             point:{
                 radius: 0
+            },
+            line:{
+                tension: 0,
+                fill: false,
+                stepped: false,
+                borderDash: []
             }
         },
         

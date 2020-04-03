@@ -28,7 +28,7 @@ app.on('ready', function() {
         slashes: true
     }));
     // Remove menu bar
-    mainWindow.webContents.openDevTools()
+    //mainWindow.webContents.openDevTools()
     //Menu.setApplicationMenu(null);
     }, 2000);
 });

@@ -12,7 +12,6 @@ import threading
 from time import sleep
 
 # Local imports
-from bt_controller import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
 from interface_api import Interface_API
@@ -49,7 +48,6 @@ LOGGER = logging.getLogger("controller")
 class StethescopeController():
     def __init__(self):
         # Child modules for handling various components
-        self.bluetooth_module = BluetoothController(self)
         self.data_module = DataController(self)
         self.data_preproc = DataPreproc(self)
         self.interface = Interface_API(self)
@@ -69,20 +67,9 @@ class StethescopeController():
         self.ecg_data = None
         self.mic_data = None
 
-        # Plotting variables
-        self.latest_ecg_value = 0
-        self.latest_mic_value = 0
-        self.latest_ecg_values = []
-        self.latest_mic_values = []
-
     def start_listening(self):
         LOGGER.info("Beginning listening session...")
-        
-        # Generate file names for raw data
-        current_dt = datetime.datetime.now()
-        self.ecg_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_ecg_data.csv")
-        self.mic_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_mic_data.csv")
-
+    
         # Spawn thread for handling received data
         #data_handling_thread = threading.Thread(target=self.data_module.wait_for_raw_data, 
         #                                            daemon=True)
@@ -100,17 +87,11 @@ class StethescopeController():
         plotting_thread = threading.Thread(target=self.plot.start_plotter,
                                                      daemon=True) 
         plotting_thread.start()
-        #plotting_thread.join()
-
-        # Start bluetooth conection and data transfer
-        self.bluetooth_module.search_for_device()
         
-        #while True:
-        #   if self.receive_data:
-        
+        #plotting_thread.join()        
         #data_handling_thread.start()
         #data_processing_thread.start()
-        self.bluetooth_module.connect_and_listen()
+        
         LOGGER.info("Data pipe closed")
 
 ### Main ###
