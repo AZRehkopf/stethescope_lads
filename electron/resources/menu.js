@@ -1,20 +1,28 @@
 const net = require('net');
+const {basename} = require('path')
+const { ipcRenderer, remote } = require('electron')
+const { dialog } = remote;
+
+var tempECGDataFilePath = null;
+var tempMicDataFilePath = null;
+var ecgDataFilePath = null;
+var micDataFilePath = null;
 
 var control_port = new net.Socket();
 var dataSocket = new net.Socket();
 
-// control_port.connect(65535, '127.0.0.1', function() {
-//     console.log('Connected to the python interface api');
-// });
+control_port.connect(65535, '127.0.0.1', function() {
+    console.log('Connected to the python interface api');
+});
 
-// control_port.on('data', function(data) {
-//     parsedData = JSON.parse(data.toString('utf8'));
-//     parseTCP(parsedData);
-// });
+control_port.on('data', function(data) {
+    parsedData = JSON.parse(data.toString('utf8'));
+    parseTCP(parsedData);
+});
 
-// control_port.on('close', function() {
-// 	console.log('Control port closed');
-// });
+control_port.on('close', function() {
+	console.log('Control port closed');
+});
 
 dataSocket.connect(65534, '127.0.0.1', function() {
     console.log('Connected to data socket');
@@ -158,13 +166,101 @@ var micChart = new Chart(ctx_mic, {
 
 document.getElementById("start").addEventListener("click", startRecording);
 document.getElementById("stop").addEventListener("click", stopRecording);
+document.getElementById("settings").addEventListener("click", showSettings);
+document.getElementById("settingsCancelBtn").addEventListener("click", hideSettings);
+document.getElementById("settingsApplyBtn").addEventListener("click", applySettings);
+document.getElementById("ecgDataBtn").addEventListener("click", getECGFile);
+document.getElementById("micDataBtn").addEventListener("click", getMicFile);
+document.getElementById("dismissWarningModal").addEventListener("click", hideWarning);
+
+micDataSelectionText
+// Event functions
 
 function startRecording() {
-    var tcp_command = {"cmd": "start", "data": null}
-    control_port.write(JSON.stringify(tcp_command))
+    if (ecgDataFilePath == null || micDataFilePath == null) {
+        $('#noDataWarningModal').modal({
+            autofocus: false,
+            allowMultiple: true,
+            closable: false,
+            dimmerSettings: { 
+                opacity: 1,
+                closable: false 
+            }
+        }).modal('show');
+    } else {
+        var tcp_command = {"cmd": "start", "ecg_file": ecgDataFilePath, "mic_file": micDataFilePath};
+        control_port.write(JSON.stringify(tcp_command));
+        setTimeout(function () { 
+            $('#statusIcon').removeClass('grey');
+            $('#statusIcon').addClass('yellow');
+            document.getElementById("statusIcon").innerHTML = "Analyzing...";
+        }, 750);
+    }
 }
 
 function stopRecording() {
-    var tcp_command = {"cmd": "stop", "data": null}
-    control_port.write(JSON.stringify(tcp_command))
+    var tcp_command = {"cmd": "stop", "data": null};
+    control_port.write(JSON.stringify(tcp_command));
+}
+
+function showSettings() {
+    $('#settingsModal').modal({
+        autofocus: false,
+        allowMultiple: true,
+        closable: false,
+        dimmerSettings: { 
+            opacity: 1,
+            closable: false 
+        }
+    }).modal('show');
+}
+
+function hideSettings() {
+    $('#settingsModal').modal('hide');
+    setTimeout(function () { 
+        document.getElementById("ecgDataSelectionText").innerHTML = "&nbsp;&nbsp;&nbsp;No file selected";
+        document.getElementById("micDataSelectionText").innerHTML = "&nbsp;&nbsp;&nbsp;No file selected";
+    }, 500);
+}
+
+function hideWarning() {
+    $('#noDataWarningModal').modal('hide');
+}
+
+function applySettings() {
+    ecgDataFilePath = tempECGDataFilePath;
+    micDataFilePath = tempMicDataFilePath;
+    $('#settingsModal').modal('hide');
+}
+
+async function getECGFile() {
+    const dialogAsync = dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+            { name: 'CSV Files', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
+    });
+    const chosenFiles = await dialogAsync;
+    if (chosenFiles) {
+        tempECGDataFilePath = chosenFiles["filePaths"][0];
+        fileName = basename(chosenFiles["filePaths"][0]);
+        document.getElementById("ecgDataSelectionText").innerHTML = "&nbsp;&nbsp;&nbsp;" + fileName;
+    }
+}
+
+async function getMicFile() {
+    const dialogAsync = dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+            { name: 'CSV Files', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
+    });
+    const chosenFiles = await dialogAsync;
+    if (chosenFiles) {
+        tempMicDataFilePath = chosenFiles["filePaths"][0];
+        fileName = basename(chosenFiles["filePaths"][0]);
+        document.getElementById("micDataSelectionText").innerHTML = "&nbsp;&nbsp;&nbsp;" + fileName;
+    }
 }

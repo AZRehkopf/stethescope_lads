@@ -48,14 +48,19 @@ class Interface_API():
                     data = self.conn.recv(1024)
                     data_string = data.decode("utf-8")
                     
-                    parsed_data = json.loads(data_string)
+                    try:
+                        parsed_data = json.loads(data_string)
+                    except json.JSONDecodeError:
+                        LOGGER.info("User closed the interface")
+                        sys.exit()
                     
                     if parsed_data['cmd'] == 'start':
                         LOGGER.info("Start command received")
-                        self.controller.receive_data = True
+                        self.controller.ecg_file_name = parsed_data['ecg_file']
+                        self.controller.mic_file_name = parsed_data['mic_file']
+                        self.controller.start_analysis = True
                     elif parsed_data['cmd'] == 'stop':
                         LOGGER.info("Stop command received")
-                        self.controller.receive_data = False
                         
                 except ConnectionResetError:
                     LOGGER.info("Lost connection with the interface exiting")

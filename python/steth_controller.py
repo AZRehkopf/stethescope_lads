@@ -60,7 +60,7 @@ class StethescopeController():
         self.mic_file_name = None
 
         # Control signals
-        self.receive_data = False
+        self.start_analysis = False
         
         # Data structures for shared information
         self.raw_data_stream = None
@@ -79,18 +79,16 @@ class StethescopeController():
         #                                             daemon=True)
         # self.child_threads.append(data_processing_thread)
 
-        # interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
-        #                                             daemon=True)
-        # interface_api_thread.start()
-        # self.child_threads.append(interface_api_thread)
+        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
+                                                     daemon=True)
+        interface_api_thread.start()
 
         plotting_thread = threading.Thread(target=self.plot.start_plotter,
                                                      daemon=True) 
         plotting_thread.start()
         
-        #plotting_thread.join()        
-        #data_handling_thread.start()
-        #data_processing_thread.start()
+        interface_api_thread.join()
+        plotting_thread.join()        
         
         LOGGER.info("Data pipe closed")
 

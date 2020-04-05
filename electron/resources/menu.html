@@ -26,59 +26,113 @@
         </h2>
     </div>
     
-<div class="chart-container">
-    <canvas id="ecgData" width="50" height="50"></canvas>
-</div>
+    <div id="ecgChartContainer" class="chart-container">
+        <canvas id="ecgData" width="50" height="50"></canvas>
+    </div>
 
-<div class="chart-container">
-    <canvas id="micData" width="50" height="50"></canvas>
-</div>
+    <div class="chart-container">
+        <canvas id="micData" width="50" height="50"></canvas>
+    </div>
 
-<div id="settings">
-        <button class="circular inverted ui icon button" id="settingsBtn">
-                <i class="icon cog"></i>
-        </button>
-</div>
+    <div id="settings">
+            <button class="circular inverted ui icon button" id="settingsBtn">
+                    <i class="icon cog"></i>
+            </button>
+    </div>
 
-<div id="heart-rate">
-    <div class="ui small inverted statistics">
-        <div class="ui tiny statistic">
-            <div class="value">
-            <i class="inverted grey heartbeat icon"></i>
-            67
-            </div>
-            <div class="inverted label">
-            Heart Rate
+    <div id="heart-rate">
+        <div class="ui small inverted statistics">
+            <div class="ui tiny statistic">
+                <div class="value">
+                <i class="inverted grey heartbeat icon"></i>
+                --
+                </div>
+                <div class="inverted label">
+                Heart Rate
+                </div>
             </div>
         </div>
-    </div>
-</div> 
+    </div> 
 
-<div id="status">
-    <div class="ui small inverted statistics">
-        <div class="ui tiny green statistic">
-            <div id="status">
-                <a class="ui large green label" id="statusIcon">No Issues Detected</a>
-            </div>
-            <div class="label" id="status-label">
-            Analysis
+    <div id="status">
+        <div class="ui small inverted statistics">
+            <div class="ui tiny grey statistic">
+                <div id="status">
+                    <a class="ui large grey label" id="statusIcon"> Not Started</a>
+                </div>
+                <div class="label" id="status-label">
+                Analysis
+                </div>
             </div>
         </div>
+    </div> 
+
+    <div id="start">
+            <button class="circular inverted green ui icon button" id="settingsBtn">
+                    <i class="icon clipboard check"></i>
+            </button>
     </div>
-</div> 
 
-<div id="start">
-        <button class="circular inverted green ui icon button" id="settingsBtn">
-                <i class="icon clipboard check"></i>
-        </button>
-</div>
+    <div id="stop">
+            <button class="circular inverted red ui icon button" id="settingsBtn">
+                    <i class="icon ban"></i>
+            </button>
+    </div>
 
-<div id="stop">
-        <button class="circular inverted red ui icon button" id="settingsBtn">
-                <i class="icon ban"></i>
-        </button>
-</div>
+    <!-- Modals -->
+    <div class="ui basic modal" id="settingsModal">
+        <div class="ui icon header">
+            <i class="cogs icon"></i>
+            Settings
+        </div>
+        
+        <div class="content">
+            <button class="ui black right labeled icon button" id="ecgDataBtn">
+                <i class="folder outline icon"></i>
+                Select ECG Data File
+            </button>
+            <span class="ui text" id="ecgDataSelectionText">&nbsp;&nbsp;&nbsp;No file selected</span>
+            
+            <br />
 
+            <button class="ui black right labeled icon button" id="micDataBtn">
+                <i class="folder outline icon"></i>
+                Select Mic Data File&nbsp; 
+            </button>
+            <span class="ui text" id="micDataSelectionText">&nbsp;&nbsp;&nbsp;No file selected</span>
+                            
+        </div>
+        
+        <div class="ui red basic cancel inverted button" id="settingsCancelBtn">
+            <i class="remove icon"></i>
+            Cancel
+        </div>
+        <div class="ui green ok inverted button" id="settingsApplyBtn">
+            Apply
+            <i class="arrow right icon"></i>
+        </div>
+        
+    </div>
+</body>
+
+<h5 id="ecgChartLabel" class="ui inverted header">ECG Data Stream</h5>
+
+<h5 id="micChartLabel" class="ui inverted header">Mic Data Stream</h5>
+
+    <div class="ui basic modal" id="noDataWarningModal">
+        <div class="ui icon header">
+            <i class="exclamation circle icon"></i>
+            Error
+        </div>
+        <div class="content">
+        <p>No data selected to analize! You must first specify to analize data before running analysis. To select data open the settings menu and select the data files you would like to analize.</p>
+        </div>
+        
+        <div class="ui green ok inverted button" id="dismissWarningModal">
+        <i class="checkmark icon"></i>
+        Ok
+        </div>
+    </div>
 
 <script src="menu.js"></script>
 </html>

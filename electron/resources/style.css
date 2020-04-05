@@ -39,33 +39,70 @@ h2 {
 }
 
 #settings {
+    position: absolute;
     margin-left: 725px;
-    margin-top: -485px;
+    margin-top: -537px;
 }
 
 #start {
+    position: absolute;
     margin-left: 625px;
-    margin-top: -425px;
+    margin-top: -537px;
 }
 
 #stop {
+    position: absolute;
     margin-left: 675px;
-    margin-top: -36px;
+    margin-top: -537px;
 }
 
 #heart-rate {
-    margin-left: 645px;
-    margin-top: 90px;
+    position: absolute;
+    margin-left: 660px;
+    margin-top: -380px;
 }
 
 #status {
-    margin-left: 310px;
-    margin-top: 85px;
+    position: absolute;
+    width: 100px;
+    margin-left: 325px;
+    margin-top: -78px;
 }
 
 #status-label {
-    margin-left: 310px;
-    margin-top: 5px;
+    position: absolute;
+    margin-left: 342px;
+    margin-top: -43px;
+}
+
+#dismissWarningModal {
+    margin-top: 25px;
+    margin-left: 305px;
+}
+
+#micDataBtn {
+    margin-top: 10px;
+}
+
+#settingsCancelBtn { 
+    margin-left: 235px;
+    margin-top: 25px;
+}
+
+#ecgChartLabel {
+    position: absolute;
+    margin-top: -458px;
+    margin-left: 38px;
+}
+
+#ecgChartContainer {
+    margin-top: 50px;
+}
+
+#micChartLabel {
+    position: absolute;
+    margin-top: -228px;
+    margin-left: 38px;
 }
 
 .chart-container {
