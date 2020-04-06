@@ -12,6 +12,7 @@ import threading
 from time import sleep
 
 # Local imports
+from data_collection import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
 from interface_api import Interface_API
@@ -48,7 +49,7 @@ LOGGER = logging.getLogger("controller")
 class StethescopeController():
     def __init__(self):
         # Child modules for handling various components
-        self.data_module = DataController(self)
+        self.data_collection_module = BluetoothController(self) 
         self.data_preproc = DataPreproc(self)
         self.interface = Interface_API(self)
         self.plot = Plotter(self)
@@ -59,8 +60,14 @@ class StethescopeController():
         self.ecg_file_name = None
         self.mic_file_name = None
 
+        self.ecg_save_file_name = None
+        self.mic_save_file_name = None
+        self.target_save_data_dir = None
+
         # Control signals
         self.start_analysis = False
+        self.enable_bt_search = False
+        self.collect_bt_data = False
         
         # Data structures for shared information
         self.raw_data_stream = None
@@ -79,16 +86,33 @@ class StethescopeController():
         #                                             daemon=True)
         # self.child_threads.append(data_processing_thread)
 
-        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface,
-                                                     daemon=True)
+        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface, daemon=True)
         interface_api_thread.start()
 
-        plotting_thread = threading.Thread(target=self.plot.start_plotter,
-                                                     daemon=True) 
+        plotting_thread = threading.Thread(target=self.plot.start_plotter, daemon=True) 
         plotting_thread.start()
         
-        interface_api_thread.join()
-        plotting_thread.join()        
+        while True:
+            while not self.enable_bt_search:
+                sleep(2)
+            result = self.data_collection_module.search_for_device()
+            self.enable_bt_search = False
+
+            if result:
+                LOGGER.info("Connected to BT")
+                self.interface.send_bt_status(result, DATA_DIR)
+            else:
+                LOGGER.info("Failed to connect to BT")
+                self.interface.send_bt_status(result, DATA_DIR)
+                continue
+
+            while not self.collect_bt_data:
+                if self.enable_bt_search: break
+                sleep(2)
+
+            if self.collect_bt_data:
+                LOGGER.info("Collecting BT data now...")
+                self.data_collection_module.connect_and_listen()
         
         LOGGER.info("Data pipe closed")
 

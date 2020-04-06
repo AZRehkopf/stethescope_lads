@@ -14,44 +14,21 @@ from time import sleep
 # Third party imports
 import bluetooth
 
-### File Checks ###
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
-LOGGING_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
-if not os.path.isdir(LOGGING_DIR):
-    os.mkdir(LOGGING_DIR)
-
-if not os.path.isdir(DATA_DIR):
-    os.mkdir(DATA_DIR)
-
 ### Globals ###
 
 CONTROL_PACKET_SIZE = 1
 DATA_PACKET_SIZE = 2
-
-### Logging Configuration
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(asctime)s - %(name)s - %(message)s",
-    datefmt='%d/%m/%Y %H:%M:%S',
-    handlers=[
-        logging.FileHandler(os.path.join(LOGGING_DIR, 'python.log')),
-        logging.StreamHandler(sys.stdout)
-    ])
-
 LOGGER = logging.getLogger("data_collection")
 
 
 class BluetoothController():
-    def __init__(self):
+    def __init__(self, controller):
+        self.controller = controller
+
         self.mac_address = None
         self.name = None
         self.socket = None
         self.port = 1
-
-        current_dt = datetime.datetime.now()
-        self.ecg_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_ecg_data.csv")
-        self.mic_file_name = current_dt.strftime("%Y%m%d_%H%M%S_raw_mic_data.csv")
 
         self.ecg_list = []
         self.mic_list = []
@@ -64,8 +41,8 @@ class BluetoothController():
 
         # Look for the ESP32 device and connect if found
         if len(detected_devices) == 0:
-            LOGGER.error("No devices were detected. Make sure the deivce is powered on.")
-            sys.exit()
+            LOGGER.error("No devices were detected. Make sure the device is powered on.")
+            return False
         else:
             count = 0
             target_device = None
@@ -77,7 +54,7 @@ class BluetoothController():
             
             if count == 0:
                 LOGGER.error("No ESP32 devices were detected. Make sure the deivce is powered on.")
-                sys.exit()
+                return False
             elif count == 1:
                 LOGGER.info("Device found.")
                 self.mac_address = target_device[0].decode("utf-8")
@@ -87,10 +64,10 @@ class BluetoothController():
         
                 self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
                 self.socket.connect((self.mac_address, self.port))
-                LOGGER.info("Ready to receive data.")
+                return True
             else:
                 LOGGER.error("Multiple ESP32 devices were detected, no handling for this yet")
-                sys.exit()
+                return False
 
     def connect_and_listen(self):
         LOGGER.info("Starting data pipe...")
@@ -100,7 +77,7 @@ class BluetoothController():
         
         self.aquire_lock()
         
-        while True:
+        while self.controller.collect_bt_data:
             try:
                 self.get_samples()
                 self.verify_locked()
@@ -166,11 +143,11 @@ class BluetoothController():
             self.aquire_lock()
 
     def save_data(self): 
-        with open(os.path.join(DATA_DIR, self.ecg_file_name),'a') as ecg_file:
+        with open(os.path.join(self.controller.target_save_data_dir, self.controller.ecg_save_file_name + ".csv"),'a') as ecg_file:
         	writer = csv.writer(ecg_file)
         	writer.writerow(self.ecg_list) 
 
-        with open(os.path.join(DATA_DIR, self.mic_file_name),'a') as mic_file:
+        with open(os.path.join(self.controller.target_save_data_dir, self.controller.mic_save_file_name + ".csv"),'a') as mic_file:
         	writer = csv.writer(mic_file)
         	writer.writerow(self.mic_list)
 

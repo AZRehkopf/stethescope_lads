@@ -39,6 +39,7 @@
                     <i class="icon cog"></i>
             </button>
     </div>
+    
 
     <div id="heart-rate">
         <div class="ui small inverted statistics">
@@ -76,6 +77,12 @@
     <div id="stop">
             <button class="circular inverted red ui icon button" id="settingsBtn">
                     <i class="icon ban"></i>
+            </button>
+    </div>
+
+    <div id="bluetooth">
+            <button class="circular inverted ui icon button" id="settingsBtn">
+                    <i class="icon bluetooth b"></i>
             </button>
     </div>
 
@@ -131,6 +138,84 @@
         <div class="ui green ok inverted button" id="dismissWarningModal">
         <i class="checkmark icon"></i>
         Ok
+        </div>
+    </div>
+
+    <div class="ui basic modal" id="noDeviceWarningModal">
+        <div class="ui icon header">
+            <i class="exclamation circle icon"></i>
+            Error
+        </div>
+        <div class="content">
+        <p>No compatible bluetooth device was found in range for data collection. Make sure the device is powered on and nearby, then try connecting again.</p>
+        </div>
+        
+        <div class="ui green ok inverted button" id="dismissBTWarningModal">
+        <i class="checkmark icon"></i>
+        Ok
+        </div>
+    </div>
+
+    <div class="ui basic modal" id="btConfigModal">
+        <div class="ui icon header">
+            <i class="bluetooth icon"></i>
+            Bluetooth Data Collection
+        </div>
+        
+        
+        <div class="content">
+            <div id="btStatusContainer">
+                <span class="ui text">
+                    <b>Status:</b>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </span>
+                    <button class="ui black left labeled icon button" id="btStatusBtn" tabIndex="-1">
+                        <i><div class="inactive-blob" id="statusLight"></div></i>
+                        <div id="statusText">Not Connected</div>
+                    </button>
+            </div>
+
+            <button class="ui black right labeled icon button" id="connectBtn">
+                <i class="broadcast tower icon"></i>
+                Search for Device 
+            </button>
+
+            <div class="ui inverted divider"></div>
+
+            <button class="disabled ui black right labeled icon button" id="dataFolderBtn">
+                <i class="folder outline icon"></i>
+                Select Data Folder 
+            </button>
+            <span class="ui text" id="dataFolderSelectionText">Data Folder</span>
+
+            <br />
+
+            <div class="ui disabled inverted right labeled input" id="ecgFileNameDiv">
+                <input type="text" placeholder="ECG File Name" id="ecgFileNameInput">
+                <div class="ui label" id="ecgFileNameLabel">
+                    <div class="text">.csv</div>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="ui disabled inverted right labeled input" id="micFileNameDiv">
+                <input type="text" placeholder="Mic File Name" id="micFileNameInput">
+                <div class="ui label" id="micFileNameLabel">
+                    <div class="text">.csv</div>
+                </div>
+            </div>
+
+        </div>
+       
+        
+        <div class="ui red basic cancel inverted button" id="btConfigCancelBtn">
+            <i class="remove icon"></i>
+            Close
+        </div>
+        <div class="ui disabled green basic inverted button" id="startStopRecordBtn">
+            Start Recording
+            <i class="play icon" id="startIcon"></i>
         </div>
     </div>
 

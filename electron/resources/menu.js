@@ -7,6 +7,7 @@ var tempECGDataFilePath = null;
 var tempMicDataFilePath = null;
 var ecgDataFilePath = null;
 var micDataFilePath = null;
+var recording = false;
 
 var control_port = new net.Socket();
 var dataSocket = new net.Socket();
@@ -172,8 +173,13 @@ document.getElementById("settingsApplyBtn").addEventListener("click", applySetti
 document.getElementById("ecgDataBtn").addEventListener("click", getECGFile);
 document.getElementById("micDataBtn").addEventListener("click", getMicFile);
 document.getElementById("dismissWarningModal").addEventListener("click", hideWarning);
+document.getElementById("bluetooth").addEventListener("click", showBTConfig);
+document.getElementById("btConfigCancelBtn").addEventListener("click", hideBTConfig);
+document.getElementById("connectBtn").addEventListener("click", connectBT);
+document.getElementById("dismissBTWarningModal").addEventListener("click", dismissBTWarning);
+document.getElementById("dataFolderBtn").addEventListener("click", getDataFolder);
+document.getElementById("startStopRecordBtn").addEventListener("click", recordData);
 
-micDataSelectionText
 // Event functions
 
 function startRecording() {
@@ -215,6 +221,18 @@ function showSettings() {
     }).modal('show');
 }
 
+function showBTConfig() {
+    $('#btConfigModal').modal({
+        autofocus: false,
+        allowMultiple: true,
+        closable: false,
+        dimmerSettings: { 
+            opacity: 1,
+            closable: false 
+        }
+    }).modal('show');
+}
+
 function hideSettings() {
     $('#settingsModal').modal('hide');
     setTimeout(function () { 
@@ -225,6 +243,22 @@ function hideSettings() {
 
 function hideWarning() {
     $('#noDataWarningModal').modal('hide');
+}
+
+function hideBTConfig() {
+    $('#btConfigModal').modal('hide');
+    setTimeout(function () { 
+        $('#connectBtn').removeClass("disabled");
+        $('#statusLight').css({"background":"rgba(94, 94, 94, 1)"});
+        document.getElementById("statusText").innerHTML = "Not Connected";
+        $('#dataFolderBtn').addClass("disabled");
+        document.getElementById("dataFolderSelectionText").innerHTML = "Data Folder";
+        $('#ecgFileNameDiv').addClass("disabled");
+        document.getElementById("ecgFileNameInput").value = "";
+        $('#micFileNameDiv').addClass("disabled");
+        document.getElementById("micFileNameInput").value = "";
+        $('#startStopRecordBtn').addClass("disabled");
+    }, 500);
 }
 
 function applySettings() {
@@ -262,5 +296,122 @@ async function getMicFile() {
         tempMicDataFilePath = chosenFiles["filePaths"][0];
         fileName = basename(chosenFiles["filePaths"][0]);
         document.getElementById("micDataSelectionText").innerHTML = "&nbsp;&nbsp;&nbsp;" + fileName;
+    }
+}
+
+function connectBT() {
+    var tcp_command = {"cmd": "find_bt", "data": null};
+    control_port.write(JSON.stringify(tcp_command));
+    document.getElementById("connectBtn").innerHTML = "Search for Device"
+    $('#connectBtn').addClass("elastic loading");
+    $('#btConfigCancelBtn').addClass("disabled");
+}
+
+function bt_connected(data) {
+    $('#connectBtn').removeClass("elastic loading");
+    document.getElementById("connectBtn").innerHTML = "<i class='broadcast tower icon'></i> Search for Device";
+    $('#btConfigCancelBtn').removeClass("disabled");
+    document.getElementById("statusText").innerHTML = "Connected";
+    $('#statusLight').css({"background":"#2ecc40"});
+
+    $('#dataFolderBtn').removeClass("disabled");
+    document.getElementById("dataFolderSelectionText").innerHTML = data["data_fp"];
+    $('#ecgFileNameDiv').removeClass("disabled");
+    document.getElementById("ecgFileNameInput").value = data["ecg"];
+    $('#micFileNameDiv').removeClass("disabled");
+    document.getElementById("micFileNameInput").value = data["mic"];
+    $('#startStopRecordBtn').removeClass("disabled");
+    $('#connectBtn').addClass("disabled");
+}
+
+function bt_connection_failed() {
+    $('#connectBtn').removeClass("elastic loading");
+    document.getElementById("connectBtn").innerHTML = "<i class='broadcast tower icon'></i> Search for Device";
+    $('#btConfigCancelBtn').removeClass("disabled");
+    $('#btConfigModal').modal('hide');
+
+    setTimeout(function () {
+        $('#noDeviceWarningModal').modal({
+            autofocus: false,
+            allowMultiple: true,
+            closable: false,
+            dimmerSettings: { 
+                opacity: 1,
+                closable: false 
+            }
+        }).modal('show');
+    }, 600);
+}
+
+function dismissBTWarning() {
+    $('#noDeviceWarningModal').modal('hide');
+
+    setTimeout(function () {
+        $('#btConfigModal').modal({
+            autofocus: false,
+            allowMultiple: true,
+            closable: false,
+            dimmerSettings: { 
+                opacity: 1,
+                closable: false 
+            }
+        }).modal('show');
+    }, 600);
+}
+
+async function getDataFolder() {
+    const dialogAsync = dialog.showOpenDialog({
+        properties: ['openDirectory'],
+    });
+    const chosenFiles = await dialogAsync;
+    if (chosenFiles) {
+        document.getElementById("dataFolderSelectionText").innerHTML = chosenFiles["filePaths"][0];
+    }
+}
+
+function recordData() {
+    if (!recording) {
+        $('#statusLight').css({"background":"rgba(255, 82, 82, 1)"});
+        $('#statusLight').css({"animation":"custom 2s infinite"});
+        document.getElementById("statusText").innerHTML = "Recording";
+        
+        $('#btConfigCancelBtn').addClass("disabled");
+
+        $('#startStopRecordBtn').removeClass("green");
+        $('#startStopRecordBtn').addClass("red");
+        document.getElementById("startStopRecordBtn").innerHTML = "Stop Recording <i class='pause icon' id='startIcon'></i>";
+        recording = true;
+        
+        var tcp_command = {
+            "cmd": "start_bt", 
+            "ecg_file": document.getElementById("ecgFileNameInput").value, 
+            "mic_file": document.getElementById("micFileNameInput").value, 
+            "data_fp": document.getElementById("dataFolderSelectionText").innerHTML
+        };
+        control_port.write(JSON.stringify(tcp_command));
+    } else {
+        $('#statusLight').css({"background":"#2ecc40"});
+        $('#statusLight').css({"animation":""});
+        document.getElementById("statusText").innerHTML = "Connnected";
+        
+        $('#btConfigCancelBtn').removeClass("disabled");
+
+        $('#startStopRecordBtn').removeClass("red");
+        $('#startStopRecordBtn').addClass("green");
+        document.getElementById("startStopRecordBtn").innerHTML = "Start Recording <i class='play icon' id='startIcon'></i>";
+        recording = false;
+
+        var tcp_command = {"cmd": "stop_bt"};
+        control_port.write(JSON.stringify(tcp_command));
+    }
+}
+
+function parseTCP(data) {
+    if (data["cmd"] == "bt_stat") {
+        if (data["status"]) {
+            bt_connected(data);
+        } else {
+            bt_connection_failed();
+        }
     }
 }
