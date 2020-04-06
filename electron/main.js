@@ -9,9 +9,7 @@ const {ipcMain, app, BrowserWindow, Menu} = electron;
 let mainWindow;
 
 app.on('ready', function() {
-
-    setTimeout(function () {  
-        // Generate first widnow
+    // Generate first widnow
     mainWindow = new BrowserWindow({
         icon: path.join(__dirname, path.join('resources','favicon.ico')),
         resizable: false,
@@ -28,9 +26,8 @@ app.on('ready', function() {
         slashes: true
     }));
     // Remove menu bar
-    mainWindow.webContents.openDevTools()
-    //Menu.setApplicationMenu(null);
-    }, 2000);
+    // mainWindow.webContents.openDevTools()
+    // Menu.setApplicationMenu(null);
 });
 
 app.on('window-all-closed', () => {
