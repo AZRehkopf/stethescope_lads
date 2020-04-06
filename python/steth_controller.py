@@ -16,6 +16,7 @@ from data_collection import BluetoothController
 from data_controller import DataController
 from data_preproc import DataPreproc
 from interface_api import Interface_API
+from peak_detector import PeakDetector
 from plotter import Plotter
 
 ### Globals ###
@@ -49,9 +50,11 @@ LOGGER = logging.getLogger("controller")
 class StethescopeController():
     def __init__(self):
         # Child modules for handling various components
+        LOGGER.info("Creating modules...")
         self.data_collection_module = BluetoothController(self) 
         self.data_preproc = DataPreproc(self)
         self.interface = Interface_API(self)
+        self.peak_detector_module = PeakDetector(self)
         self.plot = Plotter(self)
         
         # General class variables
@@ -75,17 +78,7 @@ class StethescopeController():
         self.mic_data = None
 
     def start_listening(self):
-        LOGGER.info("Beginning listening session...")
-    
-        # Spawn thread for handling received data
-        #data_handling_thread = threading.Thread(target=self.data_module.wait_for_raw_data, 
-        #                                            daemon=True)
-        #self.child_threads.append(data_handling_thread)
-        
-        # data_processing_thread = threading.Thread(target=self.data_preproc.find_packet,
-        #                                             daemon=True)
-        # self.child_threads.append(data_processing_thread)
-
+        LOGGER.info("Spawning child threads...")
         interface_api_thread = threading.Thread(target=self.interface.connect_to_interface, daemon=True)
         interface_api_thread.start()
 

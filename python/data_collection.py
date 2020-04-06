@@ -1,4 +1,4 @@
-# bt_controller.py
+# data_collection.py
 # Receives data from the ESP32 board
 
 ### Imports ###
@@ -20,6 +20,7 @@ CONTROL_PACKET_SIZE = 1
 DATA_PACKET_SIZE = 2
 LOGGER = logging.getLogger("data_collection")
 
+### Classes ###
 
 class BluetoothController():
     def __init__(self, controller):
@@ -32,6 +33,7 @@ class BluetoothController():
 
         self.ecg_list = []
         self.mic_list = []
+        LOGGER.info("Data collection class initialized")
 
     def search_for_device(self):
         LOGGER.info("Searching for bluetooth devices...")

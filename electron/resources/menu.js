@@ -307,7 +307,7 @@ function connectBT() {
     $('#btConfigCancelBtn').addClass("disabled");
 }
 
-function bt_connected(data) {
+function btConnected(data) {
     $('#connectBtn').removeClass("elastic loading");
     document.getElementById("connectBtn").innerHTML = "<i class='broadcast tower icon'></i> Search for Device";
     $('#btConfigCancelBtn').removeClass("disabled");
@@ -324,7 +324,7 @@ function bt_connected(data) {
     $('#connectBtn').addClass("disabled");
 }
 
-function bt_connection_failed() {
+function btConnectionFailed() {
     $('#connectBtn').removeClass("elastic loading");
     document.getElementById("connectBtn").innerHTML = "<i class='broadcast tower icon'></i> Search for Device";
     $('#btConfigCancelBtn').removeClass("disabled");
@@ -406,12 +406,18 @@ function recordData() {
     }
 }
 
+function updateHeartRate(hr) {
+    document.getElementById("heartRateDisplay").innerHTML = "<i class='inverted grey heartbeat icon'></i>" + hr
+}
+
 function parseTCP(data) {
     if (data["cmd"] == "bt_stat") {
         if (data["status"]) {
-            bt_connected(data);
+            btConnected(data);
         } else {
-            bt_connection_failed();
+            btConnectionFailed(data);
         }
+    } else if (data["cmd"] == "updt_hr") {
+        updateHeartRate(data["hr"]);
     }
 }

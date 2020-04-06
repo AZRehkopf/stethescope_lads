@@ -7,15 +7,19 @@
 import csv
 import json
 import logging
-import numpy
-import scipy.signal
 import os
 import random
 import socket
 import sys
 from time import sleep
+import threading
+
+# Third Party
+import numpy
+import scipy.signal
 
 ### Globals ###
+
 LOGGER = logging.getLogger("plotter")
 
 class Plotter():
@@ -26,6 +30,8 @@ class Plotter():
         self.port = 65534
         self.conn = None
         self.addr = None
+
+        LOGGER.info("Plotting class initialized")
 
     def start_plotter(self):
         LOGGER.info(f"Waiting for plotting connection")
@@ -49,25 +55,37 @@ class Plotter():
             self.conn, self.addr = tcp_socket.accept()
 
     def send_data(self):
+        # Varaibles for opening the CSV files
         ecg_file = open(self.controller.ecg_file_name,'r')
         mic_file = open(self.controller.mic_file_name, 'r')
         ecg_reader = csv.reader(ecg_file)
         mic_reader = csv.reader(mic_file)
         
-        count = 0
-        mic_lst = []
-        ecg_lst = []
+        # Variables for transmitting data to the interface to be graphed
+        transmit_count = 0
+        transmit_mic_lst = []
+        transmit_ecg_lst = []
+
+        # Variables for finding heart rate
+        peak_detect_count = 0
+        peak_detect_ecg_lst = []
         
         for ecg_row, mic_row in zip(ecg_reader, mic_reader):
             for ecg_value, mic_value in zip(ecg_row, mic_row):
                 if ecg_value != '' and mic_value != '':
-                    ecg_lst.append(int(ecg_value))
-                    mic_lst.append(int(mic_value))
-                    count += 1
+                    ecg_num = int(ecg_value)
+                    mic_num = int(mic_value)
+                    
+                    transmit_ecg_lst.append(ecg_num)
+                    transmit_mic_lst.append(mic_num)
+                    transmit_count += 1
+                    
+                    peak_detect_ecg_lst.append(ecg_num)
+                    peak_detect_count += 1
 
-                    if count == 400:
-                        dec_ecg_list = numpy.rint(scipy.signal.decimate(ecg_lst, 20)).tolist()
-                        dec_mic_list = numpy.rint(scipy.signal.decimate(mic_lst, 20)).tolist()
+                    if transmit_count == 400:
+                        dec_ecg_list = numpy.rint(scipy.signal.decimate(transmit_ecg_lst, 20)).tolist()
+                        dec_mic_list = numpy.rint(scipy.signal.decimate(transmit_mic_lst, 20)).tolist()
                         
                         payload = {
                         'ecg': dec_ecg_list, 
@@ -84,9 +102,18 @@ class Plotter():
                             LOGGER.info("User closed the interface")
                             return
                         
-                        count = 0
-                        mic_lst = []
-                        ecg_lst = []
+                        transmit_count = 0
+                        transmit_mic_lst = []
+                        transmit_ecg_lst = []
+
+                    if peak_detect_count == 20000:
+                        peak_detection_data = peak_detect_ecg_lst.copy() 
+                        peak_thread = threading.Thread(target=self.controller.peak_detector_module.run_peak_detection, args=(peak_detection_data,), daemon=True)
+                        peak_thread.start()
+                        
+                        peak_detect_count = 0
+                        peak_detect_ecg_lst = []
+
 
             
 if __name__ == "__main__":

@@ -25,6 +25,8 @@ class Interface_API():
         self.conn = None
         self.addr = None 
 
+        LOGGER.info("Interface class initialized")
+
     def connect_to_interface(self):
         LOGGER.info(f"Waiting for connection on port {self.port}")
         
@@ -80,6 +82,11 @@ class Interface_API():
         
         payload = {"cmd": "bt_stat", "status": status, "data_fp": data_fp, "ecg": ecg_file_name, "mic": mic_file_name}
         self.conn.send(json.dumps(payload).encode())
+
+    def send_heart_rate(self, heart_rate):
+        payload = {"cmd": "updt_hr", "hr": heart_rate}
+        self.conn.send(json.dumps(payload).encode())
+
 
 ### Main ###
 if __name__ == "__main__":
