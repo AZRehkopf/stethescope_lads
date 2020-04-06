@@ -12,12 +12,12 @@ import threading
 from time import sleep
 
 # Local imports
+from data_classifier import DataClassifier
 from data_collection import BluetoothController
-from data_controller import DataController
 from data_preproc import DataPreproc
 from interface_api import Interface_API
 from peak_detector import PeakDetector
-from plotter import Plotter
+from analysis_controller import AnalysisController
 
 ### Globals ###
 
@@ -51,11 +51,13 @@ class StethescopeController():
     def __init__(self):
         # Child modules for handling various components
         LOGGER.info("Creating modules...")
+        self.data_classifier_module = DataClassifier(self)
         self.data_collection_module = BluetoothController(self) 
         self.data_preproc = DataPreproc(self)
         self.interface = Interface_API(self)
         self.peak_detector_module = PeakDetector(self)
-        self.plot = Plotter(self)
+        self.analysis_peak_detector = PeakDetector(self)
+        self.analysis_controller = AnalysisController(self)
         
         # General class variables
         self.child_threads = []
@@ -79,11 +81,15 @@ class StethescopeController():
 
     def start_listening(self):
         LOGGER.info("Spawning child threads...")
-        interface_api_thread = threading.Thread(target=self.interface.connect_to_interface, daemon=True)
+        interface_api_thread = threading.Thread(
+            target=self.interface.connect_to_interface, 
+            daemon=True)
         interface_api_thread.start()
 
-        plotting_thread = threading.Thread(target=self.plot.start_plotter, daemon=True) 
-        plotting_thread.start()
+        anal_controller_thread = threading.Thread(
+            target=self.analysis_controller.start_controller, 
+            daemon=True) 
+        anal_controller_thread.start()
         
         while True:
             while not self.enable_bt_search:

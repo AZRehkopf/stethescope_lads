@@ -5,31 +5,26 @@
 
 # Built-ins
 import logging
+import os
 import threading
 from time import sleep
-from joblib import load
 
 # Third party imports
 import bluetooth
+from joblib import load
 import numpy as np
+import pywt
 from scipy import signal,stats
 from sklearn import preprocessing
-import pywt
 import sklearn.svm as svm
 
-
-# For testing
-import matplotlib.pyplot as plt
-import matplotlib
-import csv
-# matplotlib.use('agg') # for plotting...
-import scipy.io as sio
-
-#peak detector/heart rate calculator
-import peak_detect_class_RT as pk
-
 ### Globals ###
+
 LOGGER = logging.getLogger("classifier")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+CLASSIFIER_FILE = "_classifier_data.joblib"
+
+### Classes ###
 
 class DataClassifier():
     def __init__(self, controller):
@@ -49,60 +44,35 @@ class DataClassifier():
         self.coeffs_lp = signal.butter(filt_order,fc_lp,btype='lowpass',fs=FS,output='sos')
 
         # Load classifier
-        classifier_path = \
-            '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/physio_net/e_files_labels/_out_2020-03-31--23_59_48_clf.joblib'
+        classifier_path = os.path.join(DATA_DIR, CLASSIFIER_FILE)
         self.clf = load(classifier_path) 
-        print('Classifier loaded')
+        LOGGER.info('Classifier data loaded from file')
 
         # For test (plotting 'real-time')
         self.itr = 0
 
-        #pk detector
-        self.pk_detector= pk.peakDetector()
-
+        LOGGER.info("Data classifier class initialized")
         
-    def find_packet(self):
-        # While in receiving state look for new raw packet
-        while self.controller.receive_data:
-            if self.controller.mic_data_slow != None:
-                LOGGER.info("find_packet (DataClassifier) recieved packet.")
-                # Spawn thread to handle new packet
-                handler = threading.Thread(target=self.data_stream, args=(self.controller.mic_data_slow,self.controller.ecg_data_slow))
-                handler.start()
-                self.controller.mic_data_slow = None 
-
-            sleep(0.2)
-
-    def data_stream(self,raw_mic,raw_ecg):
-        
+    def data_stream(self, raw_ecg_data, raw_pcg_data):
         # Preprocess
-        pcg_processed, ecg_processed = self.preprocess(pcg,ecg)
-
+        pcg_processed, ecg_processed = self.preprocess(raw_pcg_data, raw_ecg_data)
+        
         # Find ECG peaks (Johnny function)
-        pk_locs, heart_rate = self.pk_detector.detectPeaks(ecg_processed)
+        self.controller.peak_detector_module.run_peak_detection(raw_ecg_data)
+        pk_locs, heart_rate = self.controller.analysis_peak_detector.detectPeaks(ecg_processed)
         
         # Extract features
         features = self.extract_features(pcg_processed,pk_locs)
 
         # Classify
-        self.clf.predict(features)
-        print(self.clf.predict(features))
+        classification = self.clf.predict(features)[0]
 
-        # Update self.controller (prediction and heart rate)
-        # ...
-
-
-
-    def plotter_fn(self,data):
-        # Plot
-        dir_name = '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/test_plot_slow/'
-        ax = []
-        fig=plt.figure()
-        ax.append(fig.add_subplot(1, 1, 1))
-        ax[0].plot(data)
-        plt.savefig(dir_name+'test'+str(self.itr),bbox_inches='tight',dpi=50)
-        plt.close(fig)
-        self.itr += 1
+        if classification == 1.0:
+            self.controller.interface.send_heart_sounds_classification(False)
+        elif classification == -1.0:
+            self.controller.interface.send_heart_sounds_classification(True)
+        else:
+            LOGGER.error("Classification error, unknown result")
 
     def extract_features(self,pcg_data,peak_locs):
         num_beats = peak_locs.size-1
@@ -149,76 +119,17 @@ class DataClassifier():
         pcg_mean = np.mean(pcg)
         pcg_std = np.std(pcg,ddof=1)
         pcg_norm = (pcg - pcg_mean) / pcg_std
+        
         # Downsample PCG and ECG
         raw_mic_ds = signal.decimate(pcg_norm,2)
         raw_ecg_ds = signal.decimate(ecg,2)
+        
         # Filter PCG
         mic_filt_hp = signal.sosfiltfilt(self.coeffs_hp,raw_mic_ds)
         mic_filt = signal.sosfiltfilt(self.coeffs_lp,mic_filt_hp)
         return mic_filt,raw_ecg_ds
 
-
-
-if __name__ == "__main__":
-
-    classifier_ob = DataClassifier('hi')
-
-    # dir_name = '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/physio_net/all_files_labels/'
-    # fname = 'a0076.mat'
-    # # # print(dir_name+fname)
-    # pcg_load = sio.loadmat(dir_name+fname)['pcg_signal_cut']
-    # pcg = pcg_load.reshape((pcg_load.shape[0],))
-    # inds_load = sio.loadmat(dir_name+fname)['s1_inds']
-    # inds = inds_load.reshape((inds_load.shape[0],))
-
-    # print(pcg)
-    # print(inds)
-    # print('Data loaded')
-
-    # pcg_1 = np.loadtxt(\
-    #     '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/johnny_files/raw_mic_data_6K_2.csv',\
-    #         delimiter=",")
-    # ecg = np.loadtxt(\
-    #     '/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/johnny_files/raw_ecg_data_6K_2.csv',\
-    #         delimiter=",")
-    
-    csvfile= open('/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/johnny_files/raw_mic_data_6K_2.csv') 
-    csvreader= csv.reader(csvfile, delimiter= ',')
-    pcg_in= []
-    for i in csvreader: #for every line in csv file
-        for j in i:
-            pcg_in.append(int(j))
-    pcg = np.array(pcg_in)
-
-    csvfile= open('/Users/joshbierbrier/Desktop/Fourth_Year/Capstone/johnny_files/raw_ecg_data_6K_2.csv') 
-    csvreader= csv.reader(csvfile, delimiter= ',')
-    ecg_in= []
-    for i in csvreader: #for every line in csv file
-        for j in i:
-            ecg_in.append(int(j))
-    ecg = np.array(ecg_in)
-
-    # print(pcg.shape)
-    # print(ecg.shape)
-
-
-    classifier_ob.data_stream(pcg,ecg)
-    # pk_detector= pk.peakDetector()
-
-    # plt.figure()
-    # plt.plot(raw_mic)
-
-
-    # print(pk_locs)
-    # print(np.ones(ecg_processed.shape[0]))
-    # a = np.ones(ecg_processed.shape[0])
-    # a[pk_locs] = 2000
-    
-    # plt.figure()
-    # plt.plot(ecg_processed)
-    # plt.plot(np.arange(0,a.shape[0]),a)
-    # features_plt = np.reshape(features,(6,3))
-    # plt.figure()
-    # plt.imshow(features_plt, interpolation= None, cmap='Greys', aspect="auto",
-    # extent=[0, 1, 0, len(features_plt)])
-    # plt.show()
+    def run_heart_sound_analysis(self, raw_ecg_data, raw_pcg_data):
+        LOGGER.info("Starting heart sound analysis")
+        self.data_stream(raw_ecg_data, raw_pcg_data)
+        LOGGER.info("Heart sound analysis complete")

@@ -20,9 +20,9 @@ import scipy.signal
 
 ### Globals ###
 
-LOGGER = logging.getLogger("plotter")
+LOGGER = logging.getLogger("analysis")
 
-class Plotter():
+class AnalysisController():
     def __init__(self, controller):
         self.controller = controller
 
@@ -31,9 +31,9 @@ class Plotter():
         self.conn = None
         self.addr = None
 
-        LOGGER.info("Plotting class initialized")
+        LOGGER.info("Analysis controller class initialized")
 
-    def start_plotter(self):
+    def start_controller(self):
         LOGGER.info(f"Waiting for plotting connection")
         self.connect_to_data_socket()
         LOGGER.info(f"Connections established, waiting for interface signal to send data")
@@ -63,12 +63,13 @@ class Plotter():
         
         # Variables for transmitting data to the interface to be graphed
         transmit_count = 0
-        transmit_mic_lst = []
         transmit_ecg_lst = []
+        transmit_mic_lst = []
 
         # Variables for finding heart rate
-        peak_detect_count = 0
-        peak_detect_ecg_lst = []
+        analysis_detect_count = 0
+        analysis_detect_ecg_lst = []
+        analysis_detect_mic_lst = []
         
         for ecg_row, mic_row in zip(ecg_reader, mic_reader):
             for ecg_value, mic_value in zip(ecg_row, mic_row):
@@ -80,8 +81,9 @@ class Plotter():
                     transmit_mic_lst.append(mic_num)
                     transmit_count += 1
                     
-                    peak_detect_ecg_lst.append(ecg_num)
-                    peak_detect_count += 1
+                    analysis_detect_ecg_lst.append(ecg_num)
+                    analysis_detect_mic_lst.append(mic_num)
+                    analysis_detect_count += 1
 
                     if transmit_count == 400:
                         dec_ecg_list = numpy.rint(scipy.signal.decimate(transmit_ecg_lst, 20)).tolist()
@@ -106,17 +108,22 @@ class Plotter():
                         transmit_mic_lst = []
                         transmit_ecg_lst = []
 
-                    if peak_detect_count == 20000:
-                        peak_detection_data = peak_detect_ecg_lst.copy() 
-                        peak_thread = threading.Thread(target=self.controller.peak_detector_module.run_peak_detection, args=(peak_detection_data,), daemon=True)
-                        peak_thread.start()
+                    if analysis_detect_count == 20000:
+                        analysis_raw_ecg_data = analysis_detect_ecg_lst.copy() 
+                        analysis_raw_pcg_data = analysis_detect_mic_lst.copy() 
+                        analysis_thread = threading.Thread(
+                            target=self.controller.data_classifier_module.run_heart_sound_analysis, 
+                            args=(
+                                analysis_raw_ecg_data,
+                                analysis_raw_pcg_data), 
+                            daemon=True)
+                        analysis_thread.start()
                         
-                        peak_detect_count = 0
-                        peak_detect_ecg_lst = []
+                        analysis_detect_count = 0
+                        analysis_detect_ecg_lst = []
+                        analysis_detect_mic_lst = []
 
-
-            
 if __name__ == "__main__":
-    plotter = Plotter()
-    plotter.start_plotter()
+    plotter = AnalysisController()
+    plotter.start_controller()
     #plotter.send_data()

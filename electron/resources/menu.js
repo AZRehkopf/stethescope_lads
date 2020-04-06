@@ -8,6 +8,7 @@ var tempMicDataFilePath = null;
 var ecgDataFilePath = null;
 var micDataFilePath = null;
 var recording = false;
+var healthy = null;
 
 var control_port = new net.Socket();
 var dataSocket = new net.Socket();
@@ -410,6 +411,26 @@ function updateHeartRate(hr) {
     document.getElementById("heartRateDisplay").innerHTML = "<i class='inverted grey heartbeat icon'></i>" + hr
 }
 
+function updateClassification(cls) {
+    if (cls){
+        $('#statusIcon').removeClass('yellow');
+        if (!healthy) {
+            $('#statusIcon').removeClass('red');
+        }
+        $('#statusIcon').addClass('green');
+        document.getElementById("statusIcon").innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;Normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        healthy = true;
+    } else {
+        $('#statusIcon').removeClass('yellow');
+        if (healthy) {
+            $('#statusIcon').removeClass('green');
+        }
+        $('#statusIcon').addClass('red');
+        document.getElementById("statusIcon").innerHTML = "&nbsp;&nbsp;Abnormal&nbsp;";
+        healthy = false;
+    }
+}
+
 function parseTCP(data) {
     if (data["cmd"] == "bt_stat") {
         if (data["status"]) {
@@ -419,5 +440,7 @@ function parseTCP(data) {
         }
     } else if (data["cmd"] == "updt_hr") {
         updateHeartRate(data["hr"]);
+    } else if (data["cmd"] == "updt_cls") {
+        updateClassification(data["cls"]);
     }
 }

@@ -87,6 +87,9 @@ class Interface_API():
         payload = {"cmd": "updt_hr", "hr": heart_rate}
         self.conn.send(json.dumps(payload).encode())
 
+    def send_heart_sounds_classification(self, classification):
+        payload = {"cmd": "updt_cls", "cls": classification}
+        self.conn.send(json.dumps(payload).encode())
 
 ### Main ###
 if __name__ == "__main__":
