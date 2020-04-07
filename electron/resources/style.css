@@ -47,25 +47,25 @@ input:focus, textarea:focus, select:focus{
 #settings {
     position: absolute;
     margin-left: 725px;
-    margin-top: -537px;
+    margin-top: -542px;
 }
 
 #bluetooth {
     position: absolute;
     margin-left: 675px;
-    margin-top: -537px;
+    margin-top: -542px;
 }
 
 #start {
     position: absolute;
     margin-left: 575px;
-    margin-top: -537px;
+    margin-top: -542px;
 }
 
 #stop {
     position: absolute;
     margin-left: 625px;
-    margin-top: -537px;
+    margin-top: -542px;
 }
 
 #heart-rate {
@@ -90,25 +90,30 @@ input:focus, textarea:focus, select:focus{
 #ecgChartLabel {
     position: absolute;
     margin-top: -458px;
-    margin-left: 38px;
+    margin-left: 45px;
 }
 
 #ecgChartContainer {
-    margin-top: 50px;
+    margin-top: 55px;
 }
 
 #micChartLabel {
     position: absolute;
-    margin-top: -228px;
-    margin-left: 38px;
+    margin-top: -308px;
+    margin-left: 45px;
+}
+
+#freqChartLabel {
+    position: absolute;
+    margin-top: -158px;
+    margin-left: 45px;
 }
 
 .chart-container {
     width: 600px;
-    height: 225px;
-    padding-left: 30px;
-    padding-top: 20px;
-
+    height: 150px;
+    padding-left: 35px;
+    padding-top: 10px;
 }
 
 /* Warning Modals */

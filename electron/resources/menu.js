@@ -1,8 +1,11 @@
+/* Imports */
+
 const net = require('net');
 const {basename} = require('path')
 const { ipcRenderer, remote } = require('electron')
 const { dialog } = remote;
 
+/* Globals */
 var tempECGDataFilePath = null;
 var tempMicDataFilePath = null;
 var ecgDataFilePath = null;
@@ -12,6 +15,8 @@ var healthy = null;
 
 var control_port = new net.Socket();
 var dataSocket = new net.Socket();
+
+/* Sockets for Python Communication */
 
 control_port.connect(65535, '127.0.0.1', function() {
     console.log('Connected to the python interface api');
@@ -55,6 +60,8 @@ dataSocket.on('data', function(data) {
 dataSocket.on('close', function() {
 	console.log('Data socket closed');
 });
+
+/* Data Graphs */
 
 var ecgStartingValues = Array.apply(null, Array(1250)).map(Number.prototype.valueOf,2000);
 var ecgStartingLabels = Array.apply(null, Array(1250)).map(String.prototype.valueOf,"")
@@ -150,6 +157,60 @@ var micChart = new Chart(ctx_mic, {
                     display: false,
                     min: 0,
                     max: 4095
+                },
+                gridLines: {
+                    display:false
+                }
+            }],
+            xAxes: [{
+                gridLines: {
+                    display:false
+                }
+            }]
+        }
+    }
+});
+
+var freqStartingValues = Array.apply(null, Array(1000)).map(Number.prototype.valueOf,100);
+var freqStartingLabels = Array.apply(null, Array(1000)).map(String.prototype.valueOf,"")
+
+var ctx_freq = document.getElementById('freqData').getContext('2d');
+var freqChart = new Chart(ctx_freq, {
+    type: 'line',
+    data: {
+        labels: freqStartingLabels,
+        datasets: [{
+            data: freqStartingValues,  
+            borderColor: 'rgba(155, 89, 182  , 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        legend: {
+            display: false
+        },
+        
+        elements: {
+            point:{
+                radius: 0
+            },
+            line:{
+                tension: 0,
+                fill: false,
+                stepped: false,
+                borderDash: []
+            }
+        },
+        
+        scales: {
+            yAxes: [{
+                ticks: {
+                    display: false,
+                    min: 0,
+                    max: 200
                 },
                 gridLines: {
                     display:false
@@ -431,6 +492,16 @@ function updateClassification(cls) {
     }
 }
 
+function updateFFT(fft_data) {
+    freqChart.data.datasets.forEach((dataset) => {
+        dataset.data = fft_data;
+    });    
+    
+    freqChart.update({
+        duration: 0
+    });
+}
+
 function parseTCP(data) {
     if (data["cmd"] == "bt_stat") {
         if (data["status"]) {
@@ -442,5 +513,7 @@ function parseTCP(data) {
         updateHeartRate(data["hr"]);
     } else if (data["cmd"] == "updt_cls") {
         updateClassification(data["cls"]);
+    } else if (data["cmd"] == "updt_fft") {
+        updateFFT(data["fft"]);
     }
 }

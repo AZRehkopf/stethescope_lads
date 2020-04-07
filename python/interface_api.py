@@ -91,6 +91,10 @@ class Interface_API():
         payload = {"cmd": "updt_cls", "cls": classification}
         self.conn.send(json.dumps(payload).encode())
 
+    def send_fft_graph(self, data):
+        payload = {"cmd": "updt_fft", "fft": data}
+        self.conn.send(json.dumps(payload).encode())
+
 ### Main ###
 if __name__ == "__main__":
     # Code for testing the interface apis

@@ -30,8 +30,12 @@
         <canvas id="ecgData" width="50" height="50"></canvas>
     </div>
 
-    <div class="chart-container">
+    <div id="micChartContainer" class="chart-container">
         <canvas id="micData" width="50" height="50"></canvas>
+    </div>
+
+    <div id="frequencyChartContainer" class="chart-container">
+        <canvas id="freqData" width="50" height="50"></canvas>
     </div>
 
     <div id="settings">
@@ -125,6 +129,8 @@
 <h5 id="ecgChartLabel" class="ui inverted header">ECG Data Stream</h5>
 
 <h5 id="micChartLabel" class="ui inverted header">Mic Data Stream</h5>
+
+<h5 id="freqChartLabel" class="ui inverted header">Frequency Components of Mic Data</h5>
 
     <div class="ui basic modal" id="noDataWarningModal">
         <div class="ui icon header">

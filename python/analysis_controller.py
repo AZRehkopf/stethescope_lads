@@ -16,6 +16,7 @@ import threading
 
 # Third Party
 import numpy
+from scipy import fft, signal
 import scipy.signal
 
 ### Globals ###
@@ -26,6 +27,7 @@ class AnalysisController():
     def __init__(self, controller):
         self.controller = controller
 
+        # Socket Parameters
         self.host = "127.0.0.1"
         self.port = 65534
         self.conn = None
@@ -118,10 +120,34 @@ class AnalysisController():
                                 analysis_raw_pcg_data), 
                             daemon=True)
                         analysis_thread.start()
+
+                        fft_thread = threading.Thread(
+                            target=self.compute_fft, 
+                            args=(
+                                analysis_raw_pcg_data,), 
+                            daemon=True)
+                        fft_thread.start()
                         
                         analysis_detect_count = 0
                         analysis_detect_ecg_lst = []
                         analysis_detect_mic_lst = []
+
+    def compute_fft(self, raw_mic_data):
+        sleep(0.5)
+        mic_np = numpy.array(raw_mic_data) # numpy variable
+        
+        # Compute FFT 
+        mic_fft = fft.rfft(mic_np - mic_np.mean()) # remove mean before computing FFT
+        mic_fft = 20 * numpy.log10(abs(mic_fft))
+        mic_fft = mic_fft[0:4999]
+        lst_mic_fft = mic_fft.tolist()
+        lst_mic_fft.pop()
+        dec_filt_fft_lst = numpy.rint(scipy.signal.decimate(lst_mic_fft, 5)).tolist()
+        
+        #print(dec_filt_fft_lst)
+        #print(len(dec_filt_fft_lst))
+        self.controller.interface.send_fft_graph(dec_filt_fft_lst)
+        
 
 if __name__ == "__main__":
     plotter = AnalysisController()
