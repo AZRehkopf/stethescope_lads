@@ -33,6 +33,13 @@ class AnalysisController():
         self.conn = None
         self.addr = None
 
+        # Filter Setup
+        low_fc = 400 # Cutoff frequency
+        high_fc = 5
+        filt_order = 12
+        self.lowpass_coeffs = signal.butter(filt_order,low_fc,fs=4000,output='sos',btype='lowpass')
+        self.highpass_coeffs = signal.butter(filt_order,high_fc,fs=4000,output='sos',btype='highpass')
+
         LOGGER.info("Analysis controller class initialized")
 
     def start_controller(self):
@@ -88,8 +95,12 @@ class AnalysisController():
                     analysis_detect_count += 1
 
                     if transmit_count == 400:
+                        # Filter data
+                        filt_mic_low = signal.sosfiltfilt(self.lowpass_coeffs,transmit_mic_lst)
+                        filt_mic = signal.sosfiltfilt(self.highpass_coeffs,filt_mic_low)        
+
                         dec_ecg_list = numpy.rint(scipy.signal.decimate(transmit_ecg_lst, 20)).tolist()
-                        dec_mic_list = numpy.rint(scipy.signal.decimate(transmit_mic_lst, 20)).tolist()
+                        dec_mic_list = numpy.rint(scipy.signal.decimate(filt_mic, 20)).tolist()
                         
                         payload = {
                         'ecg': dec_ecg_list, 
@@ -113,6 +124,10 @@ class AnalysisController():
                     if analysis_detect_count == 20000:
                         analysis_raw_ecg_data = analysis_detect_ecg_lst.copy() 
                         analysis_raw_pcg_data = analysis_detect_mic_lst.copy() 
+                        # Filter data
+                        filt_mic_low_fft = signal.sosfiltfilt(self.lowpass_coeffs,analysis_raw_pcg_data)
+                        filt_mic_fft = signal.sosfiltfilt(self.highpass_coeffs,filt_mic_low_fft)
+
                         analysis_thread = threading.Thread(
                             target=self.controller.data_classifier_module.run_heart_sound_analysis, 
                             args=(
@@ -124,7 +139,7 @@ class AnalysisController():
                         fft_thread = threading.Thread(
                             target=self.compute_fft, 
                             args=(
-                                analysis_raw_pcg_data,), 
+                                filt_mic_fft,), 
                             daemon=True)
                         fft_thread.start()
                         
@@ -138,9 +153,10 @@ class AnalysisController():
         
         # Compute FFT 
         mic_fft = fft.rfft(mic_np - mic_np.mean()) # remove mean before computing FFT
-        mic_fft = 20 * numpy.log10(abs(mic_fft))
+        # mic_fft = 20 * numpy.log10(abs(mic_fft))
+        mic_fft = abs(mic_fft)
         mic_fft = mic_fft[0:4999]
-        
+
         # all_fft_x_axis = numpy.arange(0,4000/2,(4000/2)/mic_fft.shape[0])
         # fft_x_axis = all_fft_x_axis[0:4999:10]
         # print(numpy.rint(fft_x_axis).tolist())
@@ -149,7 +165,6 @@ class AnalysisController():
         lst_mic_fft = mic_fft.tolist()
         lst_mic_fft.pop()
         dec_filt_fft_lst = numpy.rint(scipy.signal.decimate(lst_mic_fft, 5)).tolist()
-        
         #print(dec_filt_fft_lst)
         #print(len(dec_filt_fft_lst))
         self.controller.interface.send_fft_graph(dec_filt_fft_lst)
