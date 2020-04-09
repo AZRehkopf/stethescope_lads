@@ -39,7 +39,7 @@ class DataClassifier():
         fc_hp = 20 
         fc_lp = 600
         filt_order = 12
-        FS = 2000
+        FS = 4000
         self.coeffs_hp = signal.butter(filt_order,fc_hp,btype='highpass',fs=FS,output='sos')
         self.coeffs_lp = signal.butter(filt_order,fc_lp,btype='lowpass',fs=FS,output='sos')
 
@@ -48,8 +48,8 @@ class DataClassifier():
         self.clf = load(classifier_path) 
         LOGGER.info('Classifier data loaded from file')
 
-        # For test (plotting 'real-time')
-        self.itr = 0
+        # Remove beats
+        self.beat_var = np.array([])
 
         LOGGER.info("Data classifier class initialized")
         
@@ -107,7 +107,9 @@ class DataClassifier():
 
     def beat_check(self,var_mat):
         # Find outliers
-        quartiles = np.percentile(var_mat,(25,75))
+        # Add new variance values
+        self.beat_var = np.append(self.beat_var,var_mat)
+        quartiles = np.percentile(self.beat_var,(25,75))
         iqr = quartiles[1] - quartiles[0]
         low_cutoff = quartiles[0]-iqr*1.5 
         up_cutoff = quartiles[1]+iqr*1.5
