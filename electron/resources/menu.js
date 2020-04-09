@@ -155,8 +155,8 @@ var micChart = new Chart(ctx_mic, {
             yAxes: [{
                 ticks: {
                     display: false,
-                    min: 0,
-                    max: 4095
+                    min: -1024,
+                    max: 1024
                 },
                 gridLines: {
                     display:false
@@ -174,7 +174,7 @@ var micChart = new Chart(ctx_mic, {
 var freqStartingValues = Array.apply(null, Array(1000)).map(Number.prototype.valueOf,100);
 var freqStartingLabels = [];
 
-for (let index = 0; index < 2000; index+=4) {
+for (let index = 0; index < 1000; index+=4) {
     freqStartingLabels.push(index.toString() + " Hz");
 }
 
@@ -214,7 +214,7 @@ var freqChart = new Chart(ctx_freq, {
                 ticks: {
                     display: false,
                     min: 0,
-                    max: 200
+                    max: 250000
                 },
                 gridLines: {
                     display:false
