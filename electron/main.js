@@ -13,7 +13,7 @@ app.on('ready', function() {
     mainWindow = new BrowserWindow({
         icon: path.join(__dirname, path.join('resources','favicon.ico')),
         resizable: false,
-        height: 600,
+        height: 620,
         width: 800,
         webPreferences: {
             nodeIntegration: true

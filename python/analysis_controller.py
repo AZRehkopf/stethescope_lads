@@ -140,6 +140,12 @@ class AnalysisController():
         mic_fft = fft.rfft(mic_np - mic_np.mean()) # remove mean before computing FFT
         mic_fft = 20 * numpy.log10(abs(mic_fft))
         mic_fft = mic_fft[0:4999]
+        
+        # all_fft_x_axis = numpy.arange(0,4000/2,(4000/2)/mic_fft.shape[0])
+        # fft_x_axis = all_fft_x_axis[0:4999:10]
+        # print(numpy.rint(fft_x_axis).tolist())
+        # print(mic_fft.shape[0])
+
         lst_mic_fft = mic_fft.tolist()
         lst_mic_fft.pop()
         dec_filt_fft_lst = numpy.rint(scipy.signal.decimate(lst_mic_fft, 5)).tolist()

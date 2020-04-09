@@ -172,7 +172,11 @@ var micChart = new Chart(ctx_mic, {
 });
 
 var freqStartingValues = Array.apply(null, Array(1000)).map(Number.prototype.valueOf,100);
-var freqStartingLabels = Array.apply(null, Array(1000)).map(String.prototype.valueOf,"")
+var freqStartingLabels = [];
+
+for (let index = 0; index < 2000; index+=4) {
+    freqStartingLabels.push(index.toString() + " Hz");
+}
 
 var ctx_freq = document.getElementById('freqData').getContext('2d');
 var freqChart = new Chart(ctx_freq, {
@@ -219,6 +223,13 @@ var freqChart = new Chart(ctx_freq, {
             xAxes: [{
                 gridLines: {
                     display:false
+                },
+                ticks: {
+                    display: true,
+                    autoSkip: true,
+                    maxTicksLimit: 10,
+                    fontSize: 10,
+                    padding: 0
                 }
             }]
         }
